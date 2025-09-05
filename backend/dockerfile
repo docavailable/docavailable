@@ -37,4 +37,4 @@ RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
 # Start the application
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
