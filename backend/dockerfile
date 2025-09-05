@@ -90,4 +90,4 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 8000
 
 # Start the application with proper binding and keep-alive
-CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:8000 -t public & wait"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php -S 0.0.0.0:8000 -t public & wait"]
