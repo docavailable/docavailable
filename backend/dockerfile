@@ -55,5 +55,5 @@ RUN php artisan storage:link || echo "Storage link already exists"
 # Clear caches
 RUN php artisan config:clear && php artisan cache:clear
 
-# Start the application
-CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:\${PORT:-8000} -t public"]
+# Start the application with debugging
+CMD ["sh", "-c", "echo 'Starting application...' && echo 'PORT: '\$PORT && echo 'Testing Laravel bootstrap...' && php artisan --version && echo 'Testing database connection...' && php artisan tinker --execute='echo \"DB: \" . config(\"database.default\");' && echo 'Running migrations...' && php artisan migrate --force && echo 'Migrations completed. Starting server...' && php artisan serve --host=0.0.0.0 --port=\${PORT:-8000}"]
