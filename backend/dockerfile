@@ -79,8 +79,8 @@ RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 # Create storage link
 RUN php artisan storage:link || echo "Storage link already exists"
 
-# Clear and cache config
-RUN php artisan config:clear && php artisan cache:clear && php artisan config:cache
+# Clear all caches and don't cache config (use env vars at runtime)
+RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear
 
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
