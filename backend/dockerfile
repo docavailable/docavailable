@@ -82,12 +82,9 @@ RUN php artisan storage:link || echo "Storage link already exists"
 # Clear all caches and don't cache config (use env vars at runtime)
 RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear
 
-# Copy startup script
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
 
 # Expose port 8000
 EXPOSE 8000
 
-# Start the application with proper binding and keep-alive
-CMD ["sh", "-c", "echo 'Debug: Environment variables:' && env | grep DB_ && echo 'Debug: Clearing config...' && php artisan config:clear && php artisan cache:clear && echo 'Debug: Testing DB connection...' && php artisan tinker --execute='echo \"DB: \" . config(\"database.default\") . \" - \" . config(\"database.connections.\" . config(\"database.default\") . \".host\") . \":\" . config(\"database.connections.\" . config(\"database.default\") . \".port\");' && echo 'Debug: Running migrations...' && php artisan migrate --force && echo 'Debug: Starting server...' && php -S 0.0.0.0:8000 -t public & wait"]
+# Start the application
+CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:8000 -t public"]
