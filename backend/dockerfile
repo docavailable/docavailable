@@ -27,8 +27,9 @@ WORKDIR /var/www
 # Copy the entire Laravel application
 COPY . .
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Fix composer lock and install dependencies
+RUN rm -f composer.lock && \
+    composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
