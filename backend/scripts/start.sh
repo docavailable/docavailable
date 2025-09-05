@@ -39,27 +39,25 @@ php artisan optimize || true
 
 echo "🌐 Starting HTTP server..."
 
-# DigitalOcean App Platform probes port 8000 by default; bind explicitly
-PORT_TO_USE=8000
+# Determine port (prefer platform-provided $PORT, else default 8000)
+PORT_TO_USE=${PORT:-8000}
 echo "➡️  Binding to PORT=$PORT_TO_USE"
 
 if [ ! -d "public" ]; then
   echo "❌ public directory not found. Exiting."
+  ls -la
   exit 1
 fi
 
-echo "▶️  Starting php -S 0.0.0.0:$PORT_TO_USE -t public (background)"
-php -S 0.0.0.0:${PORT_TO_USE} -t public &
-SERVER_PID=$!
-echo "✅ Server PID=$SERVER_PID"
+echo "🧪 PHP version: $(php -v | head -n 1)"
+echo "📁 PWD: $(pwd)"
+echo "📁 Public listing:"; ls -la public || true
 
-echo "🗄️ Running migrations in background..."
-(
-  php artisan migrate --force || true
-) &
+echo "🗄️ Running migrations (if any)..."
+php artisan migrate --force || true
 
-echo "⏳ Waiting for server process to exit..."
-wait ${SERVER_PID}
+echo "▶️  Exec: php -S 0.0.0.0:$PORT_TO_USE -t public"
+exec php -S 0.0.0.0:${PORT_TO_USE} -t public
 
 #!/bin/bash
 
