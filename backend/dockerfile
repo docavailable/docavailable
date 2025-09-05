@@ -79,9 +79,6 @@ RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 # Create storage link
 RUN php artisan storage:link || echo "Storage link already exists"
 
-# Run migrations during build
-RUN php artisan migrate --force || echo "Migrations completed or failed"
-
 # Clear and cache config
 RUN php artisan config:clear && php artisan cache:clear && php artisan config:cache
 
@@ -93,4 +90,4 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 8000
 
 # Start the application with proper binding and keep-alive
-CMD ["sh", "-c", "php -S 0.0.0.0:8000 -t public & wait"]
+CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:8000 -t public & wait"]

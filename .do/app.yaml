@@ -20,7 +20,7 @@ services:
   - key: APP_URL
     value: https://docavailable-backend.ondigitalocean.app
   - key: DB_CONNECTION
-    value: pgsql
+    value: pgsql_simple
   - key: DB_HOST
     value: docavailable-db-do-user-25123073-0.h.db.ondigitalocean.com
   - key: DB_PORT
