@@ -79,6 +79,12 @@ RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 # Create storage link
 RUN php artisan storage:link || echo "Storage link already exists"
 
+# Run migrations during build
+RUN php artisan migrate --force || echo "Migrations completed or failed"
+
+# Clear and cache config
+RUN php artisan config:clear && php artisan cache:clear && php artisan config:cache
+
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
@@ -86,5 +92,5 @@ RUN chmod +x /usr/local/bin/start.sh
 # Expose port 8000
 EXPOSE 8000
 
-# Start the application
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Start the application with proper binding and keep-alive
+CMD ["sh", "-c", "php -S 0.0.0.0:8000 -t public & wait"]
