@@ -37,7 +37,22 @@ php artisan view:cache || true
 php artisan optimize || true
 
 echo "🌐 Starting HTTP server..."
-php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+
+# Ensure PORT is provided by the platform
+if [ -z "${PORT:-}" ]; then
+  echo "❌ PORT is not set by the platform. Exiting to avoid binding wrong port."
+  exit 1
+fi
+
+echo "➡️  Using PORT=$PORT"
+
+# Use PHP built-in server to serve the public directory
+if [ ! -d "public" ]; then
+  echo "❌ public directory not found. Exiting."
+  exit 1
+fi
+
+exec php -S 0.0.0.0:${PORT} -t public
 
 #!/bin/bash
 
