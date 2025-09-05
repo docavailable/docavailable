@@ -53,8 +53,21 @@ echo "🧪 PHP version: $(php -v | head -n 1)"
 echo "📁 PWD: $(pwd)"
 echo "📁 Public listing:"; ls -la public || true
 
+echo "🧹 Clearing Laravel caches..."
+php artisan config:clear || true
+php artisan cache:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+
+echo "🔎 Active DB (before cache):"
+php artisan tinker --execute='echo config("database.default")."\n";' 2>/dev/null || true
+php artisan tinker --execute='$c=config("database.default"); echo (config("database.connections.$c.host")??"(no host)")."\n";' 2>/dev/null || true
+
 echo "🗄️ Running migrations (if any)..."
 php artisan migrate --force || true
+
+echo "⚡ Caching config..."
+php artisan config:cache || true
 
 echo "▶️  Exec: php -S 0.0.0.0:$PORT_TO_USE -t public"
 exec php -S 0.0.0.0:${PORT_TO_USE} -t public
