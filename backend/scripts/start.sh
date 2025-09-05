@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set +x
 
 echo "🚀 Starting DocAvailable backend..."
 
@@ -38,21 +39,22 @@ php artisan optimize || true
 
 echo "🌐 Starting HTTP server..."
 
-# Ensure PORT is provided by the platform
-if [ -z "${PORT:-}" ]; then
-  echo "❌ PORT is not set by the platform. Exiting to avoid binding wrong port."
-  exit 1
-fi
+# Determine port with fallback
+PORT_TO_USE=${PORT:-8000}
+echo "➡️  Binding to PORT=$PORT_TO_USE"
 
-echo "➡️  Using PORT=$PORT"
-
-# Use PHP built-in server to serve the public directory
 if [ ! -d "public" ]; then
   echo "❌ public directory not found. Exiting."
   exit 1
 fi
 
-exec php -S 0.0.0.0:${PORT} -t public
+echo "▶️  Trying: php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE"
+if php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE; then
+  exit 0
+fi
+
+echo "⚠️  Fallback: php -S 0.0.0.0:$PORT_TO_USE -t public"
+exec php -S 0.0.0.0:${PORT_TO_USE} -t public
 
 #!/bin/bash
 
