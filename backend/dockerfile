@@ -83,8 +83,8 @@ RUN php artisan storage:link || echo "Storage link already exists"
 RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear
 
 
-# Expose port 8000
-EXPOSE 8000
+# Port will be determined by DigitalOcean App Platform via $PORT env var
+# EXPOSE is not needed for App Platform
 
 # Start the application with detailed debugging
-CMD ["sh", "-c", "echo '=== STARTING APPLICATION ===' && echo 'Current directory:' && pwd && echo 'Files in current directory:' && ls -la && echo 'Files in public directory:' && ls -la public/ && echo 'PHP version:' && php -v && echo 'Generating APP_KEY...' && php artisan key:generate --force && echo 'Running migrations...' && php artisan migrate --force && echo 'Testing Laravel bootstrap...' && php artisan tinker --execute='echo \"Laravel loaded successfully\";' && echo 'Starting PHP server...' && php -S 0.0.0.0:8000 -t public -d display_errors=1 -d error_reporting=E_ALL -d log_errors=1"]
+CMD ["sh", "-c", "echo '=== STARTING APPLICATION ===' && echo 'Current directory:' && pwd && echo 'Files in current directory:' && ls -la && echo 'Files in public directory:' && ls -la public/ && echo 'PHP version:' && php -v && echo 'PORT environment variable:' && echo \$PORT && echo 'Generating APP_KEY...' && php artisan key:generate --force && echo 'Running migrations...' && php artisan migrate --force && echo 'Testing Laravel bootstrap...' && php artisan tinker --execute='echo \"Laravel loaded successfully\";' && echo 'Starting PHP server on port:' && echo \${PORT:-8000} && php -S 0.0.0.0:\${PORT:-8000} -t public -d display_errors=1 -d error_reporting=E_ALL -d log_errors=1"]
