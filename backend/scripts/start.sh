@@ -39,8 +39,8 @@ php artisan optimize || true
 
 echo "🌐 Starting HTTP server..."
 
-# Determine port with fallback
-PORT_TO_USE=${PORT:-8000}
+# DigitalOcean App Platform probes port 8000 by default; bind explicitly
+PORT_TO_USE=8000
 echo "➡️  Binding to PORT=$PORT_TO_USE"
 
 if [ ! -d "public" ]; then
@@ -48,13 +48,18 @@ if [ ! -d "public" ]; then
   exit 1
 fi
 
-echo "▶️  Trying: php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE"
-if php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE; then
-  exit 0
-fi
+echo "▶️  Starting php -S 0.0.0.0:$PORT_TO_USE -t public (background)"
+php -S 0.0.0.0:${PORT_TO_USE} -t public &
+SERVER_PID=$!
+echo "✅ Server PID=$SERVER_PID"
 
-echo "⚠️  Fallback: php -S 0.0.0.0:$PORT_TO_USE -t public"
-exec php -S 0.0.0.0:${PORT_TO_USE} -t public
+echo "🗄️ Running migrations in background..."
+(
+  php artisan migrate --force || true
+) &
+
+echo "⏳ Waiting for server process to exit..."
+wait ${SERVER_PID}
 
 #!/bin/bash
 
