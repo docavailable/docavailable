@@ -90,4 +90,4 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 8000
 
 # Start the application with proper binding and keep-alive
-CMD ["sh", "-c", "php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php -S 0.0.0.0:8000 -t public & wait"]
+CMD ["sh", "-c", "echo 'Debug: Environment variables:' && env | grep DB_ && echo 'Debug: Clearing config...' && php artisan config:clear && php artisan cache:clear && echo 'Debug: Testing DB connection...' && php artisan tinker --execute='echo \"DB: \" . config(\"database.default\") . \" - \" . config(\"database.connections.\" . config(\"database.default\") . \".host\") . \":\" . config(\"database.connections.\" . config(\"database.default\") . \".port\");' && echo 'Debug: Running migrations...' && php artisan migrate --force && echo 'Debug: Starting server...' && php -S 0.0.0.0:8000 -t public & wait"]
