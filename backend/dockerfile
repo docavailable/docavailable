@@ -1,4 +1,4 @@
-# Simple Laravel Dockerfile for Render
+# Simple Laravel Dockerfile for DigitalOcean App Platform
 FROM php:8.2-cli
 
 # Install system dependencies
@@ -24,38 +24,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy the entire Laravel application first
+# Copy the entire Laravel application
 COPY . .
 
-# Force cache bust with timestamp
-RUN echo "BUILD_TIMESTAMP_$(date +%s)" > .build_timestamp
-
-# Update composer lock file first to match composer.json
-RUN echo "=== Updating composer lock file ===" && \
-    composer update --no-interaction --prefer-dist --no-progress || \
-    (echo "=== Lock update failed, trying with memory limit ===" && \
-     COMPOSER_MEMORY_LIMIT=-1 composer update --no-interaction --prefer-dist --no-progress)
-
-# Install dependencies with more debugging and fallback options
-RUN echo "=== Starting composer install ===" && \
-    echo "=== PHP version: $(php -v)" && \
-    echo "=== Composer version: $(composer --version)" && \
-    echo "=== Available memory: $(free -h || echo 'free command not available')" && \
-    composer install --optimize-autoloader --no-interaction --prefer-dist --no-progress --no-dev || \
-    (echo "=== First attempt failed, trying without --no-dev ===" && \
-     composer install --optimize-autoloader --no-interaction --prefer-dist --no-progress) || \
-    (echo "=== Second attempt failed, trying with verbose output ===" && \
-     composer install --optimize-autoloader --no-interaction --prefer-dist -vvv) || \
-    (echo "=== All attempts failed, trying with memory limit ===" && \
-     COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --prefer-dist --no-progress)
-
-# Debug: Check what files were copied
-RUN echo "=== Debug: Files in /var/www ===" && ls -la /var/www
-RUN echo "=== Debug: Files in /var/www/public ===" && ls -la /var/www/public
-RUN echo "=== Debug: Checking for key Laravel files ===" && \
-    echo "artisan exists: $(test -f artisan && echo 'YES' || echo 'NO')" && \
-    echo "index.php exists: $(test -f public/index.php && echo 'YES' || echo 'NO')" && \
-    echo "router.php exists: $(test -f public/router.php && echo 'YES' || echo 'NO')"
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
@@ -69,22 +42,17 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     && chmod -R 775 storage \
     && chmod -R 775 bootstrap/cache
 
-# Copy environment file
+# Copy environment file if it doesn't exist
 RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
-# Generate keys (will be regenerated at runtime with proper env vars)
+# Generate keys
 RUN php artisan key:generate --force || echo "Key already exists"
-RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 
 # Create storage link
 RUN php artisan storage:link || echo "Storage link already exists"
 
-# Clear all caches and don't cache config (use env vars at runtime)
-RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear
+# Clear caches
+RUN php artisan config:clear && php artisan cache:clear
 
-
-# Port will be determined by DigitalOcean App Platform via $PORT env var
-# EXPOSE is not needed for App Platform
-
-# Start the application with detailed debugging
-CMD ["sh", "-c", "echo '=== STARTING APPLICATION ===' && echo 'Current directory:' && pwd && echo 'Files in current directory:' && ls -la && echo 'Files in public directory:' && ls -la public/ && echo 'PHP version:' && php -v && echo 'PORT environment variable:' && echo \$PORT && echo 'Generating APP_KEY...' && php artisan key:generate --force && echo 'Running migrations...' && php artisan migrate --force && echo 'Testing Laravel bootstrap...' && php artisan tinker --execute='echo \"Laravel loaded successfully\";' && echo 'Starting PHP server on port:' && echo \${PORT:-8000} && php -S 0.0.0.0:\${PORT:-8000} -t public -d display_errors=1 -d error_reporting=E_ALL -d log_errors=1"]
+# Start the application
+CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:\${PORT:-8000} -t public"]

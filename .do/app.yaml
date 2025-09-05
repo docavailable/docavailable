@@ -3,10 +3,10 @@ services:
 - name: laravel-backend
   source_dir: /backend
   github:
-    repo: your-github-username/docavailable
+    repo: docavailable/docavailable
     branch: main
-  build_command: composer install --no-dev --optimize-autoloader --no-interaction && php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php artisan config:cache
-  run_command: php -S 0.0.0.0:$PORT -t public
+  build_command: echo "Build completed - using Dockerfile"
+  run_command: echo "Run completed - using Dockerfile CMD"
   environment_slug: php
   instance_count: 1
   instance_size_slug: basic-xxs
@@ -19,8 +19,6 @@ services:
     value: false
   - key: APP_URL
     value: https://docavailable-backend.ondigitalocean.app
-  # Database connection is now managed automatically by DigitalOcean
-  # No manual DB environment variables needed
   - key: CACHE_DRIVER
     value: file
   - key: SESSION_DRIVER
@@ -54,5 +52,5 @@ services:
   - key: DEEPSEEK_API_KEY
     value: ${DEEPSEEK_API_KEY}
 
-# Database is now connected directly in DigitalOcean console
-# No need to define it here
+# Database is connected directly in DigitalOcean console
+# No database configuration needed here
