@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://172.20.10.11:8000'),
+    'url' => env('APP_URL', 'https://docavailable-backend.ondigitalocean.app'),
 
     /*
     |--------------------------------------------------------------------------
