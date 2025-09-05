@@ -5,8 +5,6 @@ services:
   github:
     repo: docavailable/docavailable
     branch: main
-  build_command: echo "Build completed - using Dockerfile"
-  run_command: echo "Run completed - using Dockerfile CMD"
   environment_slug: php
   instance_count: 1
   instance_size_slug: basic-xxs
@@ -19,38 +17,3 @@ services:
     value: false
   - key: APP_URL
     value: https://docavailable-backend.ondigitalocean.app
-  - key: CACHE_DRIVER
-    value: file
-  - key: SESSION_DRIVER
-    value: file
-  - key: QUEUE_CONNECTION
-    value: sync
-  - key: LOG_CHANNEL
-    value: stack
-  - key: FILESYSTEM_DISK
-    value: spaces
-  - key: SPACES_KEY
-    value: ${SPACES_KEY}
-  - key: SPACES_SECRET
-    value: ${SPACES_SECRET}
-  - key: SPACES_ENDPOINT
-    value: ${SPACES_ENDPOINT}
-  - key: SPACES_REGION
-    value: ${SPACES_REGION}
-  - key: SPACES_BUCKET
-    value: ${SPACES_BUCKET}
-  - key: PAYCHANGU_API_KEY
-    value: ${PAYCHANGU_API_KEY}
-  - key: PAYCHANGU_SECRET_KEY
-    value: ${PAYCHANGU_SECRET_KEY}
-  - key: PAYCHANGU_MERCHANT_ID
-    value: ${PAYCHANGU_MERCHANT_ID}
-  - key: PAYCHANGU_WEBHOOK_SECRET
-    value: ${PAYCHANGU_WEBHOOK_SECRET}
-  - key: PAYCHANGU_ENVIRONMENT
-    value: ${PAYCHANGU_ENVIRONMENT}
-  - key: DEEPSEEK_API_KEY
-    value: ${DEEPSEEK_API_KEY}
-
-# Database is connected directly in DigitalOcean console
-# No database configuration needed here
