@@ -5,8 +5,8 @@ services:
   github:
     repo: your-github-username/docavailable
     branch: main
-  build_command: composer install --no-dev --optimize-autoloader --no-interaction
-  run_command: bash scripts/start.sh
+  build_command: composer install --no-dev --optimize-autoloader --no-interaction && php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php artisan config:cache
+  run_command: php -S 0.0.0.0:$PORT -t public
   environment_slug: php
   instance_count: 1
   instance_size_slug: basic-xxs
