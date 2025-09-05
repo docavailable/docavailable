@@ -36,5 +36,5 @@ RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
-# Start the application with comprehensive debugging
-CMD ["sh", "-c", "echo '=== DEBUGGING STARTUP ===' && echo 'All environment variables:' && env | grep -E '^(PORT|APP_|DB_)' && echo 'PORT environment variable:' && echo $PORT && echo 'Generating APP_KEY...' && php artisan key:generate --force && echo 'Testing Laravel bootstrap...' && php artisan --version && echo 'Starting server on port:' && echo ${PORT:-25060} && echo 'Using PHP built-in server...' && php -S 0.0.0.0:${PORT:-25060} -t public"]
+# Start the application - simple and reliable
+CMD ["sh", "-c", "php artisan key:generate --force && php -S 0.0.0.0:25060 -t public"]
