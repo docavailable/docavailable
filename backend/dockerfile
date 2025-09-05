@@ -86,5 +86,5 @@ RUN php artisan config:clear && php artisan cache:clear && php artisan route:cle
 # Expose port 8000
 EXPOSE 8000
 
-# Start the application with debugging
-CMD ["sh", "-c", "echo 'Starting application...' && echo 'Environment check:' && env | grep -E '^(APP_|DB_|CACHE_|SESSION_|QUEUE_)' && echo 'PHP version:' && php -v && echo 'Laravel version:' && php artisan --version && echo 'Generating APP_KEY...' && php artisan key:generate --force && echo 'Running migrations...' && php artisan migrate --force && echo 'Migrations completed. Testing basic Laravel functionality...' && php artisan tinker --execute='echo \"Laravel app loaded successfully\";' && echo 'Starting server on 0.0.0.0:8000...' && php -S 0.0.0.0:8000 -t public -d display_errors=1 -d error_reporting=E_ALL"]
+# Start the application
+CMD ["sh", "-c", "php artisan key:generate --force && php artisan migrate --force && php -S 0.0.0.0:8000 -t public"]
