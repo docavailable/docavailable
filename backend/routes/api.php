@@ -480,6 +480,10 @@ Route::get('/webhook/auto-deductions', function() {
 Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->withoutMiddleware(['throttle']);
 Route::post('/reset-password', [\App\Http\Controllers\Auth\NewPasswordController::class, 'store'])->withoutMiddleware(['throttle']);
 
+// Public plans routes (no auth required for viewing plans)
+Route::get('/plans/public', [\App\Http\Controllers\PlanController::class, 'getAllPlans']);
+Route::get('/plans/pricing', [\App\Http\Controllers\PlanController::class, 'getPricingForCountry']);
+
 // Seed plans endpoint (for production setup)
 Route::post('/seed-plans', function () {
     try {
