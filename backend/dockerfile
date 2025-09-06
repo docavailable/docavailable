@@ -44,4 +44,4 @@ RUN echo "APP_NAME=DocAvailable" > .env && \
     echo "APP_URL=https://docavailable-backend.ondigitalocean.app" >> .env
 
 # Start the application - generate key, try migrations, then start server
-CMD ["sh", "-c", "echo 'Starting Laravel app...' && php artisan key:generate --force && echo 'Key generated, running migrations...' && php artisan migrate --force && echo 'Migrations completed successfully!' || echo 'Migrations failed, continuing...' && echo 'Starting PHP server...' && php -S 0.0.0.0:8080 -t public"]
+CMD ["sh", "-c", "echo 'Starting Laravel app...' && echo 'DB_CONNECTION='$DB_CONNECTION && echo 'DB_HOST='$DB_HOST && echo 'DB_PORT='$DB_PORT && echo 'DB_DATABASE='$DB_DATABASE && echo 'DB_USERNAME='$DB_USERNAME && php artisan key:generate --force && echo 'Key generated, running migrations...' && php artisan migrate --force && echo 'Migrations completed successfully!' || echo 'Migrations failed, continuing...' && echo 'Starting PHP server...' && php -S 0.0.0.0:8080 -t public"]
