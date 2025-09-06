@@ -36,5 +36,19 @@ RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
+# Create minimal .env file for Laravel
+RUN echo "APP_NAME=DocAvailable" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_KEY=" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=https://docavailable-backend.ondigitalocean.app" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=docavailable-db-do-user-25123073-0.h.db.ondigitalocean.com" >> .env && \
+    echo "DB_PORT=25060" >> .env && \
+    echo "DB_DATABASE=defaultdb" >> .env && \
+    echo "DB_USERNAME=doadmin" >> .env && \
+    echo "DB_PASSWORD=" >> .env && \
+    echo "DB_SSLMODE=require" >> .env
+
 # Start the application - generate key, try migrations, then start server
 CMD ["sh", "-c", "export DB_CONNECTION=pgsql && export DB_PORT=25060 && php artisan key:generate --force && php artisan migrate --force || echo 'Migrations failed, continuing...' && php -S 0.0.0.0:8080 -t public"]
