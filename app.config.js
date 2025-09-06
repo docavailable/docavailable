@@ -34,8 +34,8 @@ export default {
     ],
     extra: {
       // API Configuration
-      apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://172.20.10.11:8000",
-      laravelApiUrl: process.env.EXPO_PUBLIC_LARAVEL_API_URL || "http://172.20.10.11:8000",
+      apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "https://docavailable-3vbdv.ondigitalocean.app",
+      laravelApiUrl: process.env.EXPO_PUBLIC_LARAVEL_API_URL || "https://docavailable-3vbdv.ondigitalocean.app",
       
       // App Configuration
       appName: process.env.EXPO_PUBLIC_APP_NAME || "DocAvailable",

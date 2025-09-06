@@ -409,7 +409,7 @@ export default function PatientDashboard() {
     if (clean.startsWith('/storage/')) clean = clean.substring('/storage/'.length);
     if (clean.startsWith('storage/')) clean = clean.substring('storage/'.length);
     clean = clean.replace(/^\/+/, '');
-    return `https://docavailable-5.onrender.com/api/images/${clean}`;
+    return `https://docavailable-3vbdv.ondigitalocean.app/api/images/${clean}`;
   };
 
   useEffect(() => {

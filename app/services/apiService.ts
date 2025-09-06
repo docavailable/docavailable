@@ -71,7 +71,7 @@ class ApiService {
 
   constructor() {
     // Get base URL without /api suffix
-    const rawBaseURL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_LARAVEL_API_URL || 'https://docavailable-5.onrender.com';
+    const rawBaseURL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_LARAVEL_API_URL || 'https://docavailable-3vbdv.ondigitalocean.app';
     
     // Remove trailing /api if it exists to avoid double /api/api/
     this.baseURL = rawBaseURL.endsWith('/api') ? rawBaseURL.slice(0, -4) : rawBaseURL;
