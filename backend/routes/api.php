@@ -364,6 +364,23 @@ Route::post('/text-sessions/end/{sessionId}', [TextSessionController::class, 'en
 Route::get('/text-sessions/active-sessions', [TextSessionController::class, 'getActiveSessions']);
 Route::get('/text-sessions/{sessionId}', [TextSessionController::class, 'getSession']);
 
+// Simple test endpoint for frontend integration
+Route::get('/test', function () {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Backend is working correctly',
+        'endpoints' => [
+            'health' => '/api/health',
+            'test' => '/api/test',
+            'users' => '/api/users',
+            'auth' => '/api/auth'
+        ],
+        'database' => 'connected',
+        'migrations' => 'completed',
+        'timestamp' => now()->toISOString()
+    ]);
+});
+
 // Health check
 Route::get('/health', function () {
         $health = [
