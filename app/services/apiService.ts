@@ -151,15 +151,13 @@ class ApiService {
       async (error) => {
         const originalRequest = error.config;
 
-        // Only attempt refresh once per request and only if we have a token
+        // Only attempt refresh for 401 errors (authentication issues), not 500 errors (server issues)
         if (error.response?.status === 401 && !originalRequest._retry && !this.isRefreshing) {
           const currentToken = await this.getAuthToken();
           
-          // If no token exists, don't try to refresh - just clear auth and reject
+          // If no token exists, don't try to refresh - just reject
           if (!currentToken) {
-            console.log('ApiService: No token available, clearing auth data');
-            await this.removeAuthToken();
-            await this.removeUserData();
+            console.log('ApiService: No token available for 401 error');
             return Promise.reject(error);
           }
 
@@ -180,7 +178,7 @@ class ApiService {
               }
             }
             
-            // Refresh failed or no new token, clear auth
+            // Refresh failed or no new token, clear auth only for actual auth failures
             this.isRefreshing = false;
             console.log('ApiService: Token refresh failed, clearing auth data');
             await this.removeAuthToken();
@@ -194,6 +192,11 @@ class ApiService {
             await this.removeUserData();
             return Promise.reject(refreshError);
           }
+        }
+
+        // For 500 errors and other server errors, don't clear auth data
+        if (error.response?.status >= 500) {
+          console.error('ApiService: Server error (5xx), not clearing auth data:', error.response.status);
         }
 
         return Promise.reject(error);

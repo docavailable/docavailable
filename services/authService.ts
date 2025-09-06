@@ -520,6 +520,69 @@ class AuthService {
       throw error;
     }
   }
+
+  // Email verification methods
+  async sendVerificationCode(email: string): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log('AuthService: Sending verification code to:', email);
+      
+      const response = await this.api.post('/send-verification-code', { email });
+      
+      console.log('AuthService: Verification code response:', {
+        success: response.data?.success,
+        message: response.data?.message,
+        status: response.status
+      });
+
+      return {
+        success: response.data?.success || true,
+        message: response.data?.message || 'Verification code sent successfully'
+      };
+    } catch (error: any) {
+      console.error('AuthService: Send verification code error:', error);
+      
+      let errorMessage = 'Failed to send verification code. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      throw new Error(errorMessage);
+    }
+  }
+
+  async verifyEmail(email: string, code: string): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log('AuthService: Verifying email with code for:', email);
+      
+      const response = await this.api.post('/verify-email', { email, code });
+      
+      console.log('AuthService: Email verification response:', {
+        success: response.data?.success,
+        message: response.data?.message,
+        status: response.status
+      });
+
+      return {
+        success: response.data?.success || true,
+        message: response.data?.message || 'Email verified successfully'
+      };
+    } catch (error: any) {
+      console.error('AuthService: Email verification error:', error);
+      
+      let errorMessage = 'Failed to verify email. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      throw new Error(errorMessage);
+    }
+  }
 }
 
 export default new AuthService(); 

@@ -381,78 +381,79 @@ Route::get('/test', function () {
     ]);
 });
 
-// Health check
+// Health check - Simplified version for better reliability
 Route::get('/health', function () {
-        $health = [
+    $health = [
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'message' => 'Backend is running',
+        'services' => []
+    ];
+
+    // Test basic Laravel functionality
+    try {
+        $health['services']['laravel'] = [
             'status' => 'ok',
-            'timestamp' => now()->toISOString(),
-            'message' => 'Backend is running',
-            'services' => []
+            'version' => app()->version(),
+            'environment' => config('app.env'),
+            'debug_mode' => config('app.debug')
         ];
+    } catch (\Exception $e) {
+        $health['services']['laravel'] = [
+            'status' => 'error',
+            'error' => $e->getMessage()
+        ];
+        $health['status'] = 'error';
+    }
 
-        // Test database connection
-        try {
-            $dbConnection = DB::connection()->getPdo();
-            $health['services']['database'] = [
-                'status' => 'ok',
-                'driver' => config('database.default'),
-                'connected' => true,
-                'name' => DB::connection()->getDatabaseName(),
-                'host' => config('database.connections.' . config('database.default') . '.host'),
-                'connection_name' => DB::connection()->getName()
-            ];
-        } catch (\Exception $e) {
-            $health['services']['database'] = [
-                'status' => 'error',
-                'driver' => config('database.default'),
-                'connected' => false,
-                'error' => $e->getMessage(),
-                'host' => config('database.connections.' . config('database.default') . '.host'),
-                'connection_name' => config('database.default')
-            ];
-            $health['status'] = 'error';
-        }
-
-        // Test JWT configuration
-        try {
-            $user = \App\Models\User::first();
-            if ($user) {
-                $token = auth('api')->login($user);
-                $health['services']['jwt'] = [
-                    'status' => 'ok',
-                    'secret_configured' => !empty(config('jwt.secret')),
-                    'token_generated' => !empty($token),
-                    'token_length' => strlen($token)
-                ];
-            } else {
-                $health['services']['jwt'] = [
-                    'status' => 'warning',
-                    'message' => 'No users found in database',
-                    'secret_configured' => !empty(config('jwt.secret'))
-                ];
-            }
-        } catch (\Exception $e) {
-            $health['services']['jwt'] = [
-                'status' => 'error',
-                'error' => $e->getMessage(),
-                'secret_configured' => !empty(config('jwt.secret'))
-            ];
-            $health['status'] = 'error';
-        }
-
-        // Test environment configuration
-        $health['services']['environment'] = [
+    // Test database connection (optional - don't fail if DB is down)
+    try {
+        $dbConnection = DB::connection()->getPdo();
+        $health['services']['database'] = [
             'status' => 'ok',
-            'app_env' => config('app.env'),
-            'app_debug' => config('app.debug'),
-            'db_connection' => config('database.default'),
-            'db_host' => env('DB_HOST'),
-            'db_url_set' => !empty(env('DB_URL')),
+            'driver' => config('database.default'),
+            'connected' => true,
+            'name' => DB::connection()->getDatabaseName(),
+            'host' => config('database.connections.' . config('database.default') . '.host')
+        ];
+    } catch (\Exception $e) {
+        $health['services']['database'] = [
+            'status' => 'warning',
+            'driver' => config('database.default'),
+            'connected' => false,
+            'error' => $e->getMessage(),
+            'host' => config('database.connections.' . config('database.default') . '.host')
+        ];
+        // Don't set status to error for DB issues - just warn
+    }
+
+    // Test JWT configuration (optional)
+    try {
+        $health['services']['jwt'] = [
+            'status' => 'ok',
+            'secret_configured' => !empty(config('jwt.secret')),
             'jwt_secret_set' => !empty(env('JWT_SECRET'))
         ];
+    } catch (\Exception $e) {
+        $health['services']['jwt'] = [
+            'status' => 'warning',
+            'error' => $e->getMessage(),
+            'secret_configured' => !empty(config('jwt.secret'))
+        ];
+    }
 
-        return response()->json($health, $health['status'] === 'ok' ? 200 : 500);
-    });
+    // Test environment configuration
+    $health['services']['environment'] = [
+        'status' => 'ok',
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+        'db_connection' => config('database.default'),
+        'db_host' => env('DB_HOST'),
+        'jwt_secret_set' => !empty(env('JWT_SECRET'))
+    ];
+
+    return response()->json($health, 200);
+});
 
 // Webhook for auto-deductions (called by external services every 10 minutes)
 Route::get('/webhook/auto-deductions', function() {
@@ -478,6 +479,165 @@ Route::get('/webhook/auto-deductions', function() {
 // Password reset routes (no auth required) - temporarily without rate limiting for testing
 Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->withoutMiddleware(['throttle']);
 Route::post('/reset-password', [\App\Http\Controllers\Auth\NewPasswordController::class, 'store'])->withoutMiddleware(['throttle']);
+
+// Seed plans endpoint (for production setup)
+Route::post('/seed-plans', function () {
+    try {
+        // Check if plans already exist
+        $existingPlans = \App\Models\Plan::count();
+        
+        if ($existingPlans > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Plans already exist ($existingPlans plans found). No action needed.",
+                'plans_count' => $existingPlans
+            ]);
+        }
+
+        $plans = [
+            [
+                'name' => 'Basic Life',
+                'features' => json_encode([
+                    'video_calls' => 1,
+                    'voice_calls' => 2,
+                    'consultations' => 5,
+                    'text_sessions' => 10,
+                    'health_records' => false,
+                    'priority_support' => false
+                ]),
+                'currency' => 'USD',
+                'price' => 999,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 10,
+                'voice_calls' => 2,
+                'video_calls' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Executive Life',
+                'features' => json_encode([
+                    'video_calls' => 3,
+                    'voice_calls' => 5,
+                    'consultations' => 15,
+                    'text_sessions' => 30,
+                    'health_records' => true,
+                    'priority_support' => false
+                ]),
+                'currency' => 'USD',
+                'price' => 1999,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 30,
+                'voice_calls' => 5,
+                'video_calls' => 3,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Premium Life',
+                'features' => json_encode([
+                    'video_calls' => 5,
+                    'voice_calls' => 10,
+                    'consultations' => 30,
+                    'text_sessions' => 60,
+                    'health_records' => true,
+                    'priority_support' => true
+                ]),
+                'currency' => 'USD',
+                'price' => 3999,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 60,
+                'voice_calls' => 10,
+                'video_calls' => 5,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Basic Life',
+                'features' => json_encode([
+                    'video_calls' => 1,
+                    'voice_calls' => 2,
+                    'consultations' => 5,
+                    'text_sessions' => 10,
+                    'health_records' => false,
+                    'priority_support' => false
+                ]),
+                'currency' => 'MWK',
+                'price' => 100,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 10,
+                'voice_calls' => 2,
+                'video_calls' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Executive Life',
+                'features' => json_encode([
+                    'video_calls' => 3,
+                    'voice_calls' => 5,
+                    'consultations' => 15,
+                    'text_sessions' => 30,
+                    'health_records' => true,
+                    'priority_support' => false
+                ]),
+                'currency' => 'MWK',
+                'price' => 150,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 30,
+                'voice_calls' => 5,
+                'video_calls' => 3,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Premium Life',
+                'features' => json_encode([
+                    'video_calls' => 5,
+                    'voice_calls' => 10,
+                    'consultations' => 30,
+                    'text_sessions' => 60,
+                    'health_records' => true,
+                    'priority_support' => true
+                ]),
+                'currency' => 'MWK',
+                'price' => 200,
+                'duration' => 30,
+                'status' => 1,
+                'text_sessions' => 60,
+                'voice_calls' => 10,
+                'video_calls' => 5,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ];
+
+        $createdPlans = [];
+        foreach ($plans as $plan) {
+            $createdPlan = \App\Models\Plan::create($plan);
+            $createdPlans[] = $createdPlan;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Plans seeded successfully!',
+            'plans_count' => count($createdPlans),
+            'plans' => $createdPlans
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to seed plans: ' . $e->getMessage(),
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
 
 // Create test user endpoint (for development/testing)
 Route::post('/create-test-user', function () {

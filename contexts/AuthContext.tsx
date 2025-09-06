@@ -162,21 +162,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }, 20000); // 20 second timeout
       
       try {
-        // Test API connection first
+        // Test API connection first (optional - don't fail auth if health check fails)
         try {
           const healthResponse = await authService.healthCheck();
           if (healthResponse.success) {
             console.log('AuthContext: API health check successful');
           } else {
-            console.error('AuthContext: API health check failed');
+            console.warn('AuthContext: API health check failed, but continuing with auth initialization');
           }
         } catch (healthError: any) {
-          console.error('AuthContext: API health check failed:', healthError);
+          console.warn('AuthContext: API health check failed, but continuing with auth initialization:', healthError.message);
           
           // Check if this is a deployment issue (HTML response instead of JSON)
           if (healthError.response?.data && typeof healthError.response.data === 'string' && healthError.response.data.includes('<br />')) {
-            console.error('AuthContext: Backend deployment issue detected - returning HTML instead of JSON');
-            console.error('AuthContext: This indicates the Laravel application is not properly deployed');
+            console.warn('AuthContext: Backend deployment issue detected - returning HTML instead of JSON');
+            console.warn('AuthContext: This indicates the Laravel application is not properly deployed, but continuing with auth');
           }
         }
         

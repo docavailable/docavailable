@@ -15,20 +15,40 @@ class PlanController extends Controller
     {
         try {
             $user = auth()->user();
-            $country = $user ? $user->country : $request->get('country', 'Malawi');
+            $country = $user ? $user->country : $request->get('country', 'Zambia');
+            
+            // Fallback to default country if country is null
+            if (empty($country)) {
+                $country = 'Zambia';
+            }
             
             $plans = LocationService::getPlansForCountry($country);
+            $currency = LocationService::getCurrencyForCountry($country);
+            
+            \Illuminate\Support\Facades\Log::info('Plans fetched successfully', [
+                'user_id' => $user ? $user->id : 'guest',
+                'country' => $country,
+                'currency' => $currency,
+                'plans_count' => count($plans)
+            ]);
             
             return response()->json([
                 'success' => true,
                 'plans' => $plans,
                 'user_country' => $country,
-                'currency' => LocationService::getCurrencyForCountry($country)
+                'currency' => $currency
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to fetch plans', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+                'request_data' => $request->all()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch plans',
+                'message' => 'Failed to fetch plans: ' . $e->getMessage(),
                 'error' => $e->getMessage()
             ], 500);
         }
