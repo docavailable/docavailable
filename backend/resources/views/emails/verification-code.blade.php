@@ -21,12 +21,6 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .banner {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
         .content {
             padding: 40px 30px;
         }
@@ -97,14 +91,6 @@
             padding: 20px 0;
             border-bottom: 2px solid #f8f9fa;
         }
-        .profile-pic {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #4CAF50;
-            background-color: #ffffff;
-        }
         @media (max-width: 600px) {
             .container {
                 margin: 10px;
@@ -117,37 +103,34 @@
                 font-size: 24px;
                 letter-spacing: 2px;
             }
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header-content h1 {
+                font-size: 24px !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        @php
-            // Banner image
-            $bannerPath = public_path('images/da-x-cover.jpg');
-            $bannerData = '';
-            if (file_exists($bannerPath)) {
-                $bannerData = base64_encode(file_get_contents($bannerPath));
-            }
-            
-            // Profile picture
-            $iconPath = public_path('images/icon.png');
-            $iconData = '';
-            if (file_exists($iconPath)) {
-                $iconData = base64_encode(file_get_contents($iconPath));
-            }
-        @endphp
-        
-        @if($bannerData)
-            <img src="data:image/jpeg;base64,{{ $bannerData }}" alt="Doc Available Banner" class="banner">
-        @endif
+        <!-- Professional Header with Branding -->
+        <div style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); padding: 30px; text-align: center; color: white;">
+            <div style="display: inline-flex; align-items: center; gap: 15px; justify-content: center;">
+                <div style="width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #4CAF50; font-size: 18px;">
+                    DA
+                </div>
+                <div>
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Doc Available</h1>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">Healthcare Platform</p>
+                </div>
+            </div>
+        </div>
         
         <div class="content">
             <div class="greeting">
-                @if($iconData)
-                    <img src="data:image/png;base64,{{ $iconData }}" alt="Doc Available" class="profile-pic">
-                @endif
-                <span>Welcome to Doc Available!</span>
+                <span style="font-size: 24px; color: #2c3e50;">🏥 Welcome to Doc Available!</span>
             </div>
             <p>Thank you for registering with {{ $appName }}. To complete your account setup, please use the verification code below:</p>
             

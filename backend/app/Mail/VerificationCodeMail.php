@@ -62,24 +62,6 @@ class VerificationCodeMail extends Mailable
      */
     public function attachments(): array
     {
-        $attachments = [];
-        
-        // Embed logo as attachment for better email client compatibility
-        $logoPath = public_path('images/icon.png');
-        if (file_exists($logoPath)) {
-            $attachments[] = \Illuminate\Mail\Mailables\Attachment::fromPath($logoPath)
-                ->as('logo.png')
-                ->withMime('image/png');
-        }
-        
-        // Embed banner as attachment
-        $bannerPath = public_path('images/da-x-cover.jpg');
-        if (file_exists($bannerPath)) {
-            $attachments[] = \Illuminate\Mail\Mailables\Attachment::fromPath($bannerPath)
-                ->as('banner.jpg')
-                ->withMime('image/jpeg');
-        }
-        
-        return $attachments;
+        return [];
     }
 }
