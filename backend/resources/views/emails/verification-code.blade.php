@@ -21,6 +21,12 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .banner {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
         .content {
             padding: 40px 30px;
         }
@@ -88,12 +94,16 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            padding: 20px 0;
+            border-bottom: 2px solid #f8f9fa;
         }
         .profile-pic {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             object-fit: cover;
+            border: 3px solid #4CAF50;
+            background-color: #ffffff;
         }
         @media (max-width: 600px) {
             .container {
@@ -112,19 +122,32 @@
 </head>
 <body>
     <div class="container">
+        @php
+            // Banner image
+            $bannerPath = public_path('images/da-x-cover.jpg');
+            $bannerData = '';
+            if (file_exists($bannerPath)) {
+                $bannerData = base64_encode(file_get_contents($bannerPath));
+            }
+            
+            // Profile picture
+            $iconPath = public_path('images/icon.png');
+            $iconData = '';
+            if (file_exists($iconPath)) {
+                $iconData = base64_encode(file_get_contents($iconPath));
+            }
+        @endphp
+        
+        @if($bannerData)
+            <img src="data:image/jpeg;base64,{{ $bannerData }}" alt="Doc Available Banner" class="banner">
+        @endif
+        
         <div class="content">
             <div class="greeting">
-                @php
-                    $imagePath = public_path('images/da.png');
-                    $imageData = '';
-                    if (file_exists($imagePath)) {
-                        $imageData = base64_encode(file_get_contents($imagePath));
-                    }
-                @endphp
-                @if($imageData)
-                    <img src="data:image/png;base64,{{ $imageData }}" alt="Doc Available" class="profile-pic">
+                @if($iconData)
+                    <img src="data:image/png;base64,{{ $iconData }}" alt="Doc Available" class="profile-pic">
                 @endif
-                <span>Hello!</span>
+                <span>Welcome to Doc Available!</span>
             </div>
             <p>Thank you for registering with {{ $appName }}. To complete your account setup, please use the verification code below:</p>
             
@@ -153,10 +176,12 @@
         </div>
         
         <div class="footer">
+            <p><strong>{{ $appName }} - Healthcare Platform</strong></p>
             <p>&copy; {{ date('Y') }} {{ $appName }}. All rights reserved.</p>
             <p>This email was sent to {{ $email }}</p>
-            <p style="font-size: 12px; color: #adb5bd;">
-                This is an automated message, please do not reply to this email.
+            <p style="font-size: 12px; color: #adb5bd; margin-top: 15px;">
+                📧 This is an automated message, please do not reply to this email.<br>
+                🏥 Connecting patients with healthcare professionals worldwide.
             </p>
         </div>
     </div>
