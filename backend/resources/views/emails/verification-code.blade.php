@@ -88,8 +88,12 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 20px 0;
-            border-bottom: 2px solid #f8f9fa;
+        }
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         @media (max-width: 600px) {
             .container {
@@ -103,34 +107,24 @@
                 font-size: 24px;
                 letter-spacing: 2px;
             }
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-            .header-content h1 {
-                font-size: 24px !important;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Professional Header with Branding -->
-        <div style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); padding: 30px; text-align: center; color: white;">
-            <div style="display: inline-flex; align-items: center; gap: 15px; justify-content: center;">
-                <div style="width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #4CAF50; font-size: 18px;">
-                    DA
-                </div>
-                <div>
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Doc Available</h1>
-                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">Healthcare Platform</p>
-                </div>
-            </div>
-        </div>
-        
         <div class="content">
             <div class="greeting">
-                <span style="font-size: 24px; color: #2c3e50;">🏥 Welcome to Doc Available!</span>
+                @php
+                    $imagePath = public_path('images/da.png');
+                    $imageData = '';
+                    if (file_exists($imagePath)) {
+                        $imageData = base64_encode(file_get_contents($imagePath));
+                    }
+                @endphp
+                @if($imageData)
+                    <img src="data:image/png;base64,{{ $imageData }}" alt="Doc Available" class="profile-pic">
+                @endif
+                <span>Hello!</span>
             </div>
             <p>Thank you for registering with {{ $appName }}. To complete your account setup, please use the verification code below:</p>
             
@@ -159,12 +153,10 @@
         </div>
         
         <div class="footer">
-            <p><strong>{{ $appName }} - Healthcare Platform</strong></p>
             <p>&copy; {{ date('Y') }} {{ $appName }}. All rights reserved.</p>
             <p>This email was sent to {{ $email }}</p>
-            <p style="font-size: 12px; color: #adb5bd; margin-top: 15px;">
-                📧 This is an automated message, please do not reply to this email.<br>
-                🏥 Connecting patients with healthcare professionals worldwide.
+            <p style="font-size: 12px; color: #adb5bd;">
+                This is an automated message, please do not reply to this email.
             </p>
         </div>
     </div>

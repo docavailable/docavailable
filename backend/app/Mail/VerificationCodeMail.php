@@ -31,10 +31,10 @@ class VerificationCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🔐 Email Verification Code - Doc Available',
+            subject: 'Email Verification Code - Doc Available',
             from: new \Illuminate\Mail\Mailables\Address(
                 config('mail.from.address'),
-                'Doc Available - Healthcare Platform'
+                'Doc Available'
             ),
         );
     }

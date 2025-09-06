@@ -892,25 +892,57 @@ export default function DoctorSignUp() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        style={styles.backToSignupButton}
-                        onPress={() => navigateToLogin({ userType: 'doctor' })}
-                    >
-                        <Text style={styles.backToSignupText}>← Back to Login</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.headerText}>Create Doctor Account</Text>
-                    <Text style={styles.headerSubtext}>Join our healthcare platform as a medical professional</Text>
+            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Modern Header with Gradient */}
+                <View style={styles.modernHeader}>
+                    <View style={styles.headerContent}>
+                        <TouchableOpacity 
+                            style={styles.modernBackButton}
+                            onPress={() => navigateToLogin({ userType: 'doctor' })}
+                        >
+                            <View style={styles.backButtonIcon}>
+                                <FontAwesome name="arrow-left" size={16} color="#FFFFFF" />
+                            </View>
+                            <Text style={styles.modernBackText}>Back to Login</Text>
+                        </TouchableOpacity>
+                        
+                        <View style={styles.headerTitleContainer}>
+                            <View style={styles.titleIconContainer}>
+                                <FontAwesome name="user-md" size={24} color="#FFFFFF" />
+                            </View>
+                            <Text style={styles.modernHeaderText}>Create Doctor Account</Text>
+                        </View>
+                    </View>
                 </View>
                 
-                <View style={styles.progressContainer}>
-                    <View style={styles.progressBar}>
-                        <View style={[styles.progressStep, step >= 1 && styles.progressStepActive]} />
-                        <View style={[styles.progressStep, step >= 2 && styles.progressStepActive]} />
-                        <View style={[styles.progressStep, step >= 3 && styles.progressStepActive]} />
+                <View style={styles.container}>
+                
+                <View style={styles.modernProgressContainer}>
+                    <View style={styles.modernProgressWrapper}>
+                        <Text style={styles.modernProgressTitle}>Registration Progress</Text>
+                        <View style={styles.modernProgressBar}>
+                            <View style={[styles.modernProgressStep, step >= 1 && styles.modernProgressStepActive]}>
+                                <View style={[styles.progressStepIcon, step >= 1 && styles.progressStepIconActive]}>
+                                    <FontAwesome name={step >= 1 ? "check" : "user-md"} size={12} color={step >= 1 ? "#FFFFFF" : "#94A3B8"} />
+                                </View>
+                                <Text style={[styles.progressStepLabel, step >= 1 && styles.progressStepLabelActive]}>Professional Info</Text>
+                            </View>
+                            <View style={[styles.progressConnector, step >= 2 && styles.progressConnectorActive]} />
+                            <View style={[styles.modernProgressStep, step >= 2 && styles.modernProgressStepActive]}>
+                                <View style={[styles.progressStepIcon, step >= 2 && styles.progressStepIconActive]}>
+                                    <FontAwesome name={step >= 2 ? "check" : "certificate"} size={12} color={step >= 2 ? "#FFFFFF" : "#94A3B8"} />
+                                </View>
+                                <Text style={[styles.progressStepLabel, step >= 2 && styles.progressStepLabelActive]}>Verification</Text>
+                            </View>
+                            <View style={[styles.progressConnector, step >= 3 && styles.progressConnectorActive]} />
+                            <View style={[styles.modernProgressStep, step >= 3 && styles.modernProgressStepActive]}>
+                                <View style={[styles.progressStepIcon, step >= 3 && styles.progressStepIconActive]}>
+                                    <FontAwesome name={step >= 3 ? "check" : "envelope"} size={12} color={step >= 3 ? "#FFFFFF" : "#94A3B8"} />
+                                </View>
+                                <Text style={[styles.progressStepLabel, step >= 3 && styles.progressStepLabelActive]}>Email Confirm</Text>
+                            </View>
+                        </View>
                     </View>
-                    <Text style={styles.progressText}>Step {step} of 3</Text>
                 </View>
                 
                 {renderStep()}
@@ -940,7 +972,9 @@ export default function DoctorSignUp() {
                         )}
                     </TouchableOpacity>
                 </View>
+                
             </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -949,14 +983,170 @@ export default function DoctorSignUp() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#F8FAFC',
+    },
+    scrollContainer: {
+        flex: 1,
+    },
+    // Compact Modern Header Styles
+    modernHeader: {
+        background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)',
+        paddingTop: Platform.OS === 'ios' ? 0 : 10,
+        paddingBottom: 16,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#4CAF50',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 4,
+        ...(Platform.OS === 'web' && {
+            background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)',
+        }),
+        backgroundColor: '#4CAF50', // Fallback for non-web platforms
+    },
+    headerContent: {
+        paddingHorizontal: isWeb ? 40 : 24,
+        paddingTop: 12,
+    },
+    modernBackButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        marginBottom: 12,
+    },
+    backButtonIcon: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+    },
+    modernBackText: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    headerTitleContainer: {
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    titleIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    modernHeaderText: {
+        fontSize: isLargeScreen ? 20 : 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        marginBottom: 4,
+        textAlign: 'center',
+    },
+    modernHeaderSubtext: {
+        fontSize: isLargeScreen ? 13 : 12,
+        color: 'rgba(255, 255, 255, 0.9)',
+        textAlign: 'center',
+        lineHeight: 16,
+        maxWidth: 300,
     },
     container: {
-        flex: 1,
         maxWidth: maxWidth,
         alignSelf: 'center',
         width: '100%',
         paddingHorizontal: isWeb ? 40 : 24,
+        paddingTop: 20,
+        paddingBottom: 20,
+    },
+    // Compact Progress Bar Styles
+    modernProgressContainer: {
+        marginBottom: 20,
+    },
+    modernProgressWrapper: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
+    },
+    modernProgressTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1E293B',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    modernProgressBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modernProgressStep: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    progressStepIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F1F5F9',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    modernProgressStepActive: {
+        opacity: 1,
+    },
+    progressStepLabel: {
+        fontSize: 12,
+        color: '#94A3B8',
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    progressStepLabelActive: {
+        color: '#4CAF50',
+        fontWeight: '600',
+    },
+    progressConnector: {
+        height: 2,
+        flex: 1,
+        backgroundColor: '#E2E8F0',
+        marginHorizontal: 8,
+        marginBottom: 24,
+    },
+    progressConnectorActive: {
+        backgroundColor: '#4CAF50',
+    },
+    progressStepIconActive: {
+        backgroundColor: '#4CAF50',
+        borderColor: '#4CAF50',
     },
     header: {
         alignItems: 'center',
@@ -1001,7 +1191,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     stepContainer: {
-        flex: 1,
+        paddingBottom: 16,
     },
     stepHeader: {
         alignItems: 'center',
@@ -1160,12 +1350,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 20,
+        paddingVertical: 24,
         backgroundColor: '#fff',
+        marginTop: 16,
         borderTopWidth: 1,
         borderTopColor: '#E0E0E0',
         paddingHorizontal: 20,
-        marginTop: 20,
     },
     backButton: {
         flexDirection: 'row',

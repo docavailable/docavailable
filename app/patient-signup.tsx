@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    Image,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -47,6 +48,10 @@ interface Step1Props {
     setCity: (city: string) => void;
     acceptPolicies: boolean;
     setAcceptPolicies: (accept: boolean) => void;
+    idType: string | null;
+    setIdType: (type: string | null) => void;
+    idDocument: string | null;
+    setIdDocument: (uri: string | null) => void;
     errors: any;
 }
 
@@ -80,9 +85,81 @@ const Step1: React.FC<Step1Props> = ({
     setCity,
     acceptPolicies,
     setAcceptPolicies,
+    idType,
+    setIdType,
+    idDocument,
+    setIdDocument,
     errors,
 }) => {
     const genderOptions = ['Male', 'Female', 'Other'];
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleIdUpload = async () => {
+        console.log('handleIdUpload called, idType:', idType);
+        if (!idType) {
+            Alert.alert('Select ID Type', 'Please select an ID type first.');
+            return;
+        }
+
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Required', 'Camera roll permissions are needed to upload ID documents.');
+                return;
+            }
+
+            setIsUploading(true);
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                setIdDocument(result.assets[0].uri);
+                Alert.alert('Success', 'ID document uploaded successfully!');
+            }
+        } catch (error) {
+            console.error('Error uploading ID:', error);
+            Alert.alert('Upload Error', 'Failed to upload ID document. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleTakePhoto = async () => {
+        console.log('handleTakePhoto called, idType:', idType);
+        if (!idType) {
+            Alert.alert('Select ID Type', 'Please select an ID type first.');
+            return;
+        }
+
+        try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Required', 'Camera permissions are needed to take photos.');
+                return;
+            }
+
+            setIsUploading(true);
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                setIdDocument(result.assets[0].uri);
+                Alert.alert('Success', 'ID photo captured successfully!');
+            }
+        } catch (error) {
+            console.error('Error taking photo:', error);
+            Alert.alert('Camera Error', 'Failed to take photo. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     return (
         <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false}>
@@ -197,6 +274,138 @@ const Step1: React.FC<Step1Props> = ({
             </View>
 
             <View style={styles.formSection}>
+                <Text style={styles.sectionLabel}>Identity Verification (Optional)</Text>
+                <Text style={styles.uploadDescription}>
+                    Verify your identity for enhanced security. This step is optional and can be completed later.
+                        </Text>
+                
+                <Text style={styles.inputLabel}>Choose ID Type</Text>
+                <View style={styles.idOptionsContainer}>
+                    <TouchableOpacity 
+                        style={[styles.idOption, idType === 'drivers' && styles.idOptionActive]}
+                        onPress={() => {
+                            console.log('Selected ID type: drivers');
+                            setIdType('drivers');
+                        }}
+                    >
+                        <View style={[styles.idOptionIcon, idType === 'drivers' && styles.idOptionIconActive]}>
+                            <FontAwesome name="car" size={24} color={idType === 'drivers' ? "#4CAF50" : "#666"} />
+                        </View>
+                        <Text style={[styles.idOptionText, idType === 'drivers' && styles.idOptionTextActive]}>
+                            Driver&apos;s License
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        style={[styles.idOption, idType === 'passport' && styles.idOptionActive]}
+                        onPress={() => {
+                            console.log('Selected ID type: passport');
+                            setIdType('passport');
+                        }}
+                    >
+                        <View style={[styles.idOptionIcon, idType === 'passport' && styles.idOptionIconActive]}>
+                            <FontAwesome name="id-card" size={24} color={idType === 'passport' ? "#4CAF50" : "#666"} />
+                        </View>
+                        <Text style={[styles.idOptionText, idType === 'passport' && styles.idOptionTextActive]}>
+                            Passport
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        style={[styles.idOption, idType === 'national' && styles.idOptionActive]}
+                        onPress={() => {
+                            console.log('Selected ID type: national');
+                            setIdType('national');
+                        }}
+                    >
+                        <View style={[styles.idOptionIcon, idType === 'national' && styles.idOptionIconActive]}>
+                            <FontAwesome name="flag" size={24} color={idType === 'national' ? "#4CAF50" : "#666"} />
+                        </View>
+                        <Text style={[styles.idOptionText, idType === 'national' && styles.idOptionTextActive]}>
+                            National ID
+                        </Text>
+                    </TouchableOpacity>
+            </View>
+
+                {idType && (
+                    <View style={styles.modernUploadSection}>
+                        <Text style={styles.modernUploadTitle}>Upload Your {idType === 'drivers' ? 'Driver\'s License' : idType === 'passport' ? 'Passport' : 'National ID'}</Text>
+                        
+                        {idDocument ? (
+                            <View style={styles.modernUploadedContainer}>
+                                <View style={styles.modernUploadedImageContainer}>
+                                    <Image source={{ uri: idDocument }} style={styles.modernUploadedImage} />
+                                    <View style={styles.modernUploadSuccessOverlay}>
+                                        <FontAwesome name="check-circle" size={24} color="#4CAF50" />
+                                        <Text style={styles.modernUploadedText}>Document Uploaded Successfully</Text>
+                                    </View>
+                                </View>
+                                <TouchableOpacity style={styles.modernChangeButton} onPress={() => setIdDocument(null)}>
+                                    <FontAwesome name="edit" size={16} color="#4CAF50" />
+                                    <Text style={styles.modernChangeText}>Change Photo</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <View style={styles.modernUploadOptions}>
+                <TouchableOpacity 
+                                    style={styles.modernUploadButton} 
+                                    onPress={handleTakePhoto}
+                    disabled={isUploading}
+                >
+                    {isUploading ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" />
+                                    ) : (
+                                        <>
+                                            <FontAwesome name="camera" size={20} color="#FFFFFF" />
+                                            <Text style={styles.modernUploadButtonText}>Take Photo</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={styles.modernUploadButtonSecondary} 
+                                    onPress={handleIdUpload}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? (
+                                        <ActivityIndicator size="small" color="#4CAF50" />
+                    ) : (
+                        <>
+                                            <FontAwesome name="upload" size={20} color="#4CAF50" />
+                                            <Text style={styles.modernUploadButtonSecondaryText}>Choose from Gallery</Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+                            </View>
+                        )}
+
+                {idDocument && (
+                    <View style={styles.uploadSuccessNote}>
+                        <FontAwesome name="check-circle" size={16} color="#4CAF50" />
+                        <Text style={styles.uploadSuccessText}>
+                            ID document uploaded successfully. This step is optional.
+                        </Text>
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                <View style={styles.skipNote}>
+                    <FontAwesome name="info-circle" size={16} color="#666" />
+                    <Text style={styles.skipNoteText}>
+                        Don't have your ID handy? You can skip this step and update it later in your profile settings.
+                    </Text>
+                </View>
+
+                <View style={styles.securityNote}>
+                    <FontAwesome name="lock" size={20} color="#4CAF50" />
+                    <Text style={styles.securityNoteText}>
+                        Your information is encrypted and secure. We follow strict privacy guidelines.
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.formSection}>
                 <View style={styles.policyContainer}>
                     <TouchableOpacity
                         style={styles.checkboxContainer}
@@ -219,148 +428,6 @@ const Step1: React.FC<Step1Props> = ({
     );
 };
 
-const Step2 = () => {
-    const [idType, setIdType] = useState<string | null>(null);
-    const [idDocument, setIdDocument] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleUpload = async () => {
-        if (!idType) {
-            Alert.alert('Error', 'Please select an ID type first.');
-            return;
-        }
-
-        try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permission needed', 'Sorry, we need camera roll permissions to make this work!');
-                return;
-            }
-
-            setIsUploading(true);
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 1.0,
-            });
-
-            if (!result.canceled && result.assets[0]) {
-                setIdDocument(result.assets[0].uri);
-                Alert.alert('Success', 'ID document uploaded successfully!');
-            }
-        } catch (error) {
-            console.error('Error uploading ID:', error);
-            Alert.alert('Error', 'Failed to upload ID document. Please try again.');
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    return (
-        <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false}>
-            <View style={styles.stepHeader}>
-                <FontAwesome name="shield" size={32} color="#4CAF50" />
-                <Text style={styles.stepTitle}>Identity Verification</Text>
-                <Text style={styles.stepSubtitle}>Secure and confidential verification</Text>
-            </View>
-
-            <View style={styles.formSection}>
-                <Text style={styles.sectionLabel}>Choose ID Type</Text>
-                <View style={styles.idOptionsContainer}>
-                    <TouchableOpacity 
-                        style={[styles.idOption, idType === 'drivers' && styles.idOptionActive]}
-                        onPress={() => setIdType('drivers')}
-                    >
-                        <View style={[styles.idOptionIcon, idType === 'drivers' && styles.idOptionIconActive]}>
-                            <FontAwesome name="car" size={24} color={idType === 'drivers' ? "#4CAF50" : "#666"} />
-                        </View>
-                        <Text style={[styles.idOptionText, idType === 'drivers' && styles.idOptionTextActive]}>
-                            Driver&apos;s License
-                        </Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={[styles.idOption, idType === 'passport' && styles.idOptionActive]}
-                        onPress={() => setIdType('passport')}
-                    >
-                        <View style={[styles.idOptionIcon, idType === 'passport' && styles.idOptionIconActive]}>
-                            <FontAwesome name="id-card" size={24} color={idType === 'passport' ? "#4CAF50" : "#666"} />
-                        </View>
-                        <Text style={[styles.idOptionText, idType === 'passport' && styles.idOptionTextActive]}>
-                            Passport
-                        </Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={[styles.idOption, idType === 'national' && styles.idOptionActive]}
-                        onPress={() => setIdType('national')}
-                    >
-                        <View style={[styles.idOptionIcon, idType === 'national' && styles.idOptionIconActive]}>
-                            <FontAwesome name="flag" size={24} color={idType === 'national' ? "#4CAF50" : "#666"} />
-                        </View>
-                        <Text style={[styles.idOptionText, idType === 'national' && styles.idOptionTextActive]}>
-                            National ID
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <View style={styles.formSection}>
-                <Text style={styles.sectionLabel}>Upload ID Photo</Text>
-                <Text style={styles.uploadDescription}>
-                    Please upload a clear, high-quality photo of your government-issued ID. 
-                    This helps us verify your identity and ensure secure healthcare services.
-                </Text>
-                
-                <TouchableOpacity 
-                    style={[styles.photoUpload, isUploading && styles.photoUploadUploading, idDocument && styles.photoUploadSuccess]} 
-                    onPress={handleUpload}
-                    disabled={isUploading}
-                >
-                    {isUploading ? (
-                        <ActivityIndicator size="large" color="#4CAF50" />
-                    ) : idDocument ? (
-                        <>
-                            <FontAwesome name="check-circle" size={48} color="#4CAF50" />
-                        </>
-                    ) : (
-                        <>
-                            <FontAwesome name="camera" size={48} color="#4CAF50" />
-                        </>
-                    )}
-                </TouchableOpacity>
-                
-                <Text style={styles.photoUploadText}>
-                    {idDocument ? 'Document Uploaded' : 'Tap to Upload'}
-                </Text>
-
-                {idDocument && (
-                    <View style={styles.uploadSuccessNote}>
-                        <FontAwesome name="check-circle" size={16} color="#4CAF50" />
-                        <Text style={styles.uploadSuccessText}>
-                            ID document uploaded successfully. This step is optional.
-                        </Text>
-                    </View>
-                )}
-
-                <View style={styles.skipNote}>
-                    <FontAwesome name="info-circle" size={16} color="#666" />
-                    <Text style={styles.skipNoteText}>
-                        Don't have your ID handy? You can skip this step and update it later in your profile settings.
-                    </Text>
-                </View>
-
-                <View style={styles.securityNote}>
-                    <FontAwesome name="lock" size={20} color="#4CAF50" />
-                    <Text style={styles.securityNoteText}>
-                        Your information is encrypted and secure. We follow strict privacy guidelines.
-                    </Text>
-                </View>
-            </View>
-        </ScrollView>
-    );
-};
 
 // Step 3 Component: Email Verification
 const Step3: React.FC<Step3Props> = ({
@@ -435,7 +502,11 @@ export default function PatientSignUp() {
     const [acceptPolicies, setAcceptPolicies] = useState(false);
     const [loading, setLoading] = useState(false);
     
-    // Step 3 state
+    // ID verification state (formerly Step 2)
+    const [idType, setIdType] = useState<string | null>(null);
+    const [idDocument, setIdDocument] = useState<string | null>(null);
+    
+    // Step 2 state (now email verification)
     const [verificationCode, setVerificationCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -700,18 +771,16 @@ export default function PatientSignUp() {
     const handleContinue = async () => {
         if (step === 1) {
             if (validateStep1()) {
-                setStep(step + 1);
-            }
-        } else if (step === 2) {
-            // Send verification code when moving to step 3
+                // Send verification code when moving to step 2 (formerly step 3)
             try {
                 await sendVerificationCode();
-                setStep(step + 1);
+                    setStep(2);
             } catch (error) {
                 console.error('Failed to send verification code:', error);
-                // Don't move to step 3 if email sending fails
+                    // Don't move to step 2 if email sending fails
             }
-        } else if (step === 3) {
+            }
+        } else if (step === 2) {
             if (validateStep3()) {
                 const isVerified = await verifyEmail();
                 if (isVerified) {
@@ -746,12 +815,14 @@ export default function PatientSignUp() {
                         setCity={setCity}
                         acceptPolicies={acceptPolicies}
                         setAcceptPolicies={setAcceptPolicies}
+                        idType={idType}
+                        setIdType={setIdType}
+                        idDocument={idDocument}
+                        setIdDocument={setIdDocument}
                         errors={errors}
                     />
                 );
             case 2:
-                return <Step2 />;
-            case 3:
                 return (
                     <Step3
                         email={email}
@@ -785,6 +856,10 @@ export default function PatientSignUp() {
                         setCity={setCity}
                         acceptPolicies={acceptPolicies}
                         setAcceptPolicies={setAcceptPolicies}
+                        idType={idType}
+                        setIdType={setIdType}
+                        idDocument={idDocument}
+                        setIdDocument={setIdDocument}
                         errors={errors}
                     />
                 );
@@ -793,25 +868,50 @@ export default function PatientSignUp() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <View style={styles.header}>
+            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Modern Header with Gradient */}
+                <View style={styles.modernHeader}>
+                    <View style={styles.headerContent}>
                     <TouchableOpacity 
-                        style={styles.backToSignupButton}
+                            style={styles.modernBackButton}
                         onPress={() => navigateToLogin({ userType: 'patient' })}
                     >
-                        <Text style={styles.backToSignupText}>← Back to Login</Text>
+                            <View style={styles.backButtonIcon}>
+                                <FontAwesome name="arrow-left" size={16} color="#FFFFFF" />
+                            </View>
+                            <Text style={styles.modernBackText}>Back to Login</Text>
                     </TouchableOpacity>
-                    <Text style={styles.headerText}>Create Patient Account</Text>
-                    <Text style={styles.headerSubtext}>Join our healthcare platform</Text>
+                        
+                        <View style={styles.headerTitleContainer}>
+                            <View style={styles.titleIconContainer}>
+                                <FontAwesome name="user-plus" size={24} color="#FFFFFF" />
+                            </View>
+                            <Text style={styles.modernHeaderText}>Create Patient Account</Text>
+                        </View>
+                    </View>
                 </View>
                 
-                <View style={styles.progressContainer}>
-                    <View style={styles.progressBar}>
-                        <View style={[styles.progressStep, step >= 1 && styles.progressStepActive]} />
-                        <View style={[styles.progressStep, step >= 2 && styles.progressStepActive]} />
-                        <View style={[styles.progressStep, step >= 3 && styles.progressStepActive]} />
+                <View style={styles.container}>
+                    
+                    <View style={styles.modernProgressContainer}>
+                        <View style={styles.modernProgressWrapper}>
+                            <Text style={styles.modernProgressTitle}>Your Progress</Text>
+                            <View style={styles.modernProgressBar}>
+                                <View style={[styles.modernProgressStep, step >= 1 && styles.modernProgressStepActive]}>
+                                    <View style={[styles.progressStepIcon, step >= 1 && styles.progressStepIconActive]}>
+                                        <FontAwesome name={step >= 1 ? "check" : "user"} size={12} color={step >= 1 ? "#FFFFFF" : "#94A3B8"} />
                     </View>
-                    <Text style={styles.progressText}>Step {step} of 3</Text>
+                                    <Text style={[styles.progressStepLabel, step >= 1 && styles.progressStepLabelActive]}>Personal Info</Text>
+                                </View>
+                                <View style={[styles.progressConnector, step >= 2 && styles.progressConnectorActive]} />
+                                <View style={[styles.modernProgressStep, step >= 2 && styles.modernProgressStepActive]}>
+                                    <View style={[styles.progressStepIcon, step >= 2 && styles.progressStepIconActive]}>
+                                        <FontAwesome name={step >= 2 ? "check" : "envelope"} size={12} color={step >= 2 ? "#FFFFFF" : "#94A3B8"} />
+                                    </View>
+                                    <Text style={[styles.progressStepLabel, step >= 2 && styles.progressStepLabelActive]}>Verification</Text>
+                                </View>
+                            </View>
+                        </View>
                 </View>
                 
                 {renderStep()}
@@ -836,20 +936,22 @@ export default function PatientSignUp() {
                             <>
                                 <ActivityIndicator color="#FFFFFF" size="small" />
                                 <Text style={[styles.continueButtonText, { marginLeft: 8 }]}>
-                                    {step === 3 ? 'Creating Account...' : 'Processing...'}
+                                    {step === 2 ? 'Creating Account...' : 'Processing...'}
                                 </Text>
                             </>
                         ) : (
                             <>
                                 <Text style={styles.continueButtonText}>
-                                    {step === 3 ? 'Create Account' : 'Continue'}
+                                    {step === 2 ? 'Create Account' : 'Continue'}
                                 </Text>
                                 <Text style={styles.arrowIcon}>→</Text>
                             </>
                         )}
                     </TouchableOpacity>
                 </View>
+                
             </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -857,73 +959,173 @@ export default function PatientSignUp() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#F8FAFC',
+    },
+    scrollContainer: {
+        flex: 1,
+    },
+    // Compact Modern Header Styles
+    modernHeader: {
+        background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)',
+        paddingTop: Platform.OS === 'ios' ? 0 : 10,
+        paddingBottom: 16,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#4CAF50',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 4,
+        ...(Platform.OS === 'web' && {
+            background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)',
+        }),
+        backgroundColor: '#4CAF50', // Fallback for non-web platforms
+    },
+    headerContent: {
+        paddingHorizontal: isWeb ? 40 : 24,
+        paddingTop: 12,
+    },
+    modernBackButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        marginBottom: 12,
+    },
+    backButtonIcon: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+    },
+    modernBackText: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    headerTitleContainer: {
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    titleIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    modernHeaderText: {
+        fontSize: isLargeScreen ? 20 : 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        marginBottom: 4,
+        textAlign: 'center',
+    },
+    modernHeaderSubtext: {
+        fontSize: isLargeScreen ? 13 : 12,
+        color: 'rgba(255, 255, 255, 0.9)',
+        textAlign: 'center',
+        lineHeight: 16,
+        maxWidth: 280,
     },
     container: {
-        flex: 1,
         maxWidth: maxWidth,
         alignSelf: 'center',
         width: '100%',
         paddingHorizontal: isWeb ? 40 : 24,
-        // paddingTop: 20, // Removed to eliminate extra gap
+        paddingTop: 20,
+        paddingBottom: 20,
     },
-    header: {
-        alignItems: 'center',
-        marginBottom: 30,
+    // Compact Progress Bar Styles
+    modernProgressContainer: {
+        marginBottom: 20,
     },
-    backToSignupButton: {
-        alignSelf: 'flex-start',
-        marginBottom: 16,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        backgroundColor: '#F8F9FA',
+    modernProgressWrapper: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
     },
-    backToSignupText: {
+    modernProgressTitle: {
         fontSize: 14,
-        color: '#666',
-        fontWeight: '500',
-    },
-    headerText: {
-        fontSize: isLargeScreen ? 32 : 28,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 8,
+        fontWeight: '600',
+        color: '#1E293B',
+        marginBottom: 12,
         textAlign: 'center',
     },
-    headerSubtext: {
-        fontSize: isLargeScreen ? 18 : 16,
-        color: '#666',
-        textAlign: 'center',
-    },
-    progressContainer: {
-        alignItems: 'center',
-        marginBottom: 30,
-    },
-    progressBar: {
+    modernProgressBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        maxWidth: 300,
-        marginBottom: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    progressStep: {
+    modernProgressStep: {
+        alignItems: 'center',
         flex: 1,
-        height: 6,
-        backgroundColor: '#E0E0E0',
-        borderRadius: 3,
-        marginHorizontal: 4,
     },
-    progressStepActive: {
+    progressStepIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F1F5F9',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    modernProgressStepActive: {
+        opacity: 1,
+    },
+    progressStepLabel: {
+        fontSize: 12,
+        color: '#94A3B8',
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    progressStepLabelActive: {
+        color: '#4CAF50',
+        fontWeight: '600',
+    },
+    progressConnector: {
+        height: 2,
+        flex: 1,
+        backgroundColor: '#E2E8F0',
+        marginHorizontal: 8,
+        marginBottom: 24,
+    },
+    progressConnectorActive: {
         backgroundColor: '#4CAF50',
     },
-    progressText: {
-        fontSize: 14,
-        color: '#666',
-        fontWeight: '500',
+    progressStepIconActive: {
+        backgroundColor: '#4CAF50',
+        borderColor: '#4CAF50',
     },
     stepContainer: {
-        flex: 1,
+        paddingBottom: 16,
     },
     stepHeader: {
         alignItems: 'center',
@@ -1119,8 +1321,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 20,
-        paddingBottom: 20,
+        paddingTop: 24,
+        paddingBottom: 24,
+        marginTop: 16,
     },
     backButton: {
         flexDirection: 'row',
@@ -1287,5 +1490,122 @@ const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 20,
         flex: 1,
+    },
+    // Modern Upload Section Styles
+    modernUploadSection: {
+        marginTop: 20,
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    modernUploadTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1E293B',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    modernUploadedContainer: {
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    modernUploadedImageContainer: {
+        alignItems: 'center',
+        position: 'relative',
+        marginBottom: 12,
+        width: '100%',
+    },
+    modernUploadedImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 12,
+        backgroundColor: '#F1F5F9',
+    },
+    modernUploadSuccessOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+        padding: 12,
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    modernUploadedText: {
+        marginLeft: 8,
+        fontSize: 14,
+        color: '#4CAF50',
+        fontWeight: '600',
+    },
+    modernChangeButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#F0F9FF',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#DBEAFE',
+    },
+    modernChangeText: {
+        marginLeft: 6,
+        fontSize: 14,
+        color: '#4CAF50',
+        fontWeight: '500',
+    },
+    modernUploadOptions: {
+        gap: 12,
+        marginBottom: 16,
+    },
+    modernUploadButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        backgroundColor: '#4CAF50',
+        borderRadius: 12,
+        shadowColor: '#4CAF50',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    modernUploadButtonText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    modernUploadButtonSecondary: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#4CAF50',
+    },
+    modernUploadButtonSecondaryText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: '#4CAF50',
+        fontWeight: '600',
     },
 }); 
