@@ -36,5 +36,12 @@ RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
+# Create minimal .env file for Laravel to load configuration
+RUN echo "APP_NAME=DocAvailable" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_KEY=" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=https://docavailable-backend.ondigitalocean.app" >> .env
+
 # Start the application - generate key, try migrations, then start server
-CMD ["sh", "-c", "php artisan key:generate --force && php artisan migrate --force || echo 'Migrations failed, continuing...' && php -S 0.0.0.0:8080 -t public"]
+CMD ["sh", "-c", "echo 'Starting Laravel app...' && php artisan key:generate --force && echo 'Key generated, running migrations...' && php artisan migrate --force && echo 'Migrations completed successfully!' || echo 'Migrations failed, continuing...' && echo 'Starting PHP server...' && php -S 0.0.0.0:8080 -t public"]
