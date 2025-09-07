@@ -11,11 +11,17 @@ services:
   http_port: 8000
   run_command: |
     cd backend
+    echo "=== Starting Laravel application ==="
+    echo "=== Current directory: $(pwd) ==="
+    echo "=== Files in directory: $(ls -la) ==="
+    echo "=== Checking if artisan exists: $(ls -la artisan) ==="
     php artisan config:clear
     php artisan cache:clear
     php artisan route:clear
     php artisan view:clear
-    php artisan migrate --force
+    echo "=== Running migrations ==="
+    php artisan migrate --force || echo "Migration failed, continuing anyway"
+    echo "=== Starting server on port 8000 ==="
     php artisan serve --host=0.0.0.0 --port=8000
   envs:
   - key: APP_NAME
