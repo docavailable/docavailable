@@ -52,9 +52,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Copy environment file if it doesn't exist
 RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
-# Generate application key and JWT secret
+# Generate application key only (JWT secret comes from environment variables)
 RUN php artisan key:generate --force || echo "Key already exists"
-RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 
 # Run migrations (only if database is available)
 RUN php artisan migrate --force || echo "Migrations failed, will retry at runtime"
