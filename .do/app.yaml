@@ -1,4 +1,5 @@
 name: docavailable-backend
+# Force rebuild with new configuration
 services:
 - name: laravel-backend
   source_dir: /backend
@@ -9,7 +10,7 @@ services:
   instance_count: 1
   instance_size_slug: basic-xxs
   http_port: 8080
-  run_command: sh -c "cd backend && echo 'Starting Laravel application...' && php artisan config:clear && php artisan cache:clear && echo 'Testing database connection...' && php artisan tinker --execute='DB::connection()->getPdo(); echo \"Database connected successfully\";' && echo 'Starting server...' && php artisan serve --host=0.0.0.0 --port=8080"
+  run_command: sh -c "cd backend && echo '=== NEW STARTUP SEQUENCE ===' && echo 'Starting Laravel application...' && php artisan config:clear && php artisan cache:clear && echo 'Testing database connection...' && php artisan tinker --execute='DB::connection()->getPdo(); echo \"Database connected successfully\";' && echo 'Starting server...' && php artisan serve --host=0.0.0.0 --port=8080"
   envs:
   - key: APP_NAME
     value: DocAvailable
