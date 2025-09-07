@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 // Include debug routes
 require_once __DIR__ . '/debug.php';
+
+// Include environment test routes
+require_once __DIR__ . '/env-test.php';
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Users\ReviewController;
