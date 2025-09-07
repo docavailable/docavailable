@@ -604,6 +604,7 @@ class TextSessionController extends Controller
                     'city',
                     'country',
                     'profile_picture_url',
+                    'languages_spoken',
                     'is_online'
                 ])
                 ->get()
@@ -616,6 +617,7 @@ class TextSessionController extends Controller
                         'years_of_experience' => $doctor->years_of_experience ?? 5,
                         'location' => implode(', ', array_filter([$doctor->city, $doctor->country])),
                         'profile_picture_url' => $doctor->profile_picture_url,
+                        'languages_spoken' => $doctor->languages_spoken,
                         'is_online' => $doctor->is_online,
                     ];
                 });

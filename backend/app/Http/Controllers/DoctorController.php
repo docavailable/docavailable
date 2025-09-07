@@ -185,6 +185,7 @@ class DoctorController extends Controller
                 'sub_specialization' => $user->sub_specialization,
                 'specializations' => $user->specializations,
                 'sub_specializations' => $user->sub_specializations,
+                'languages_spoken' => $user->languages_spoken,
                 'years_of_experience' => $user->years_of_experience,
                 'bio' => $user->bio,
                 'country' => $user->country,

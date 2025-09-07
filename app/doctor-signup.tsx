@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import DatePickerField from '../components/DatePickerField';
 import LocationPicker from '../components/LocationPicker';
+import MultipleLanguagePicker from '../components/MultipleLanguagePicker';
 import MultipleSpecializationPicker from '../components/MultipleSpecializationPicker';
 import ProfilePicturePicker from '../components/ProfilePicturePicker';
 import { navigateToLogin } from '../utils/navigationUtils';
@@ -234,14 +235,12 @@ const Step1: React.FC<Step1Props> = ({
             <View style={styles.formSection}>
                 <Text style={styles.sectionLabel}>Languages Spoken</Text>
                 <Text style={styles.inputLabel}>Languages you can communicate in</Text>
-                <TextInput
-                    style={[styles.input, errors.languagesSpoken && styles.inputError]}
-                    placeholder="e.g., English, Spanish, French"
-                    placeholderTextColor="#999"
-                    value={languagesSpoken.join(', ')}
-                    onChangeText={(text) => setLanguagesSpoken(text.split(',').map(lang => lang.trim()).filter(lang => lang))}
+                <MultipleLanguagePicker
+                    selectedLanguages={languagesSpoken}
+                    onLanguagesChange={setLanguagesSpoken}
+                    error={errors.languagesSpoken}
+                    maxSelections={5}
                 />
-                {errors.languagesSpoken && <Text style={styles.errorText}>{errors.languagesSpoken}</Text>}
             </View>
 
             <View style={styles.formSection}>
@@ -601,6 +600,10 @@ export default function DoctorSignUp() {
     const verifyEmail = async () => {
         try {
             setIsVerifying(true);
+            
+            // Add a small delay to prevent rapid successive calls
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
             const response = await authService.verifyEmail(email, verificationCode);
             
             if (response.success) {

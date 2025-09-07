@@ -65,6 +65,7 @@ class AuthenticationController extends Controller
                 'surname' => 'nullable|string|max:255',
                 'specialization' => 'nullable|string|max:255',
                 'specializations' => 'nullable|string', // JSON array of specializations
+                'languages_spoken' => 'nullable|string', // JSON array of languages
                 'profile_picture' => 'nullable|string', // Base64 encoded
                 'national_id' => 'nullable|string', // Base64 encoded
                 'medical_degree' => 'nullable|string', // Base64 encoded
@@ -168,6 +169,7 @@ class AuthenticationController extends Controller
                 'profile_picture' => $profilePicturePath,
                 'specialization' => $request->specialization,
                 'specializations' => $request->specializations ? json_decode($request->specializations, true) : null,
+                'languages_spoken' => $request->languages_spoken ? json_decode($request->languages_spoken, true) : null,
                 'national_id' => $nationalIdPath,
                 'medical_degree' => $medicalDegreePath,
                 'medical_licence' => $medicalLicencePath,
@@ -913,6 +915,21 @@ class AuthenticationController extends Controller
             $cacheKey = 'email_verification_' . $email;
             \Illuminate\Support\Facades\Cache::put($cacheKey, $code, now()->addMinutes(10));
             
+            // Verify the code was stored correctly
+            $storedCode = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            if ($storedCode !== $code) {
+                Log::error('Email verification code storage failed', [
+                    'email' => $email,
+                    'expected_code' => $code,
+                    'stored_code' => $storedCode
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to store verification code. Please try again.'
+                ], 500);
+            }
+            
             // Send email with verification code
             try {
                 // Log before sending
@@ -1012,27 +1029,45 @@ class AuthenticationController extends Controller
             $email = $request->email;
             $code = $request->code;
             
-            // Get the stored code from cache
+            // Get the stored code from cache with retry mechanism
             $cacheKey = 'email_verification_' . $email;
-            $storedCode = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            $storedCode = null;
+            $maxRetries = 3;
+            $retryDelay = 100; // milliseconds
+            
+            for ($i = 0; $i < $maxRetries; $i++) {
+                $storedCode = \Illuminate\Support\Facades\Cache::get($cacheKey);
+                
+                if ($storedCode) {
+                    break; // Code found, exit retry loop
+                }
+                
+                if ($i < $maxRetries - 1) {
+                    // Wait before retrying (only if not the last attempt)
+                    usleep($retryDelay * 1000); // Convert to microseconds
+                    $retryDelay *= 2; // Exponential backoff
+                }
+            }
             
             Log::info('Email verification cache check', [
                 'email' => $email,
                 'cache_key' => $cacheKey,
                 'stored_code_exists' => !empty($storedCode),
                 'stored_code_length' => strlen($storedCode ?? ''),
-                'provided_code' => $code
+                'provided_code' => $code,
+                'retry_attempts' => $i + 1
             ]);
             
             if (!$storedCode) {
-                Log::warning('Email verification code not found in cache', [
+                Log::warning('Email verification code not found in cache after retries', [
                     'email' => $email,
-                    'cache_key' => $cacheKey
+                    'cache_key' => $cacheKey,
+                    'retry_attempts' => $maxRetries
                 ]);
                 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Verification code has expired or not found'
+                    'message' => 'Verification code has expired or not found. Please request a new code.'
                 ], 400);
             }
             

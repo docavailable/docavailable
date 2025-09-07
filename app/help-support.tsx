@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import {
     Alert,
     Dimensions,
@@ -12,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { Icon } from '../components/Icon';
 import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -208,6 +210,23 @@ export default function HelpSupport() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.mainContent}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => router.back()}
+                    >
+                        <Icon name="back" size={20} color="#333" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Help & Support</Text>
+                    <TouchableOpacity
+                        style={styles.contactButton}
+                        onPress={handleContactSupport}
+                    >
+                        <Icon name="message" size={20} color="#4CAF50" />
+                    </TouchableOpacity>
+                </View>
+
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     {/* Search Bar */}
                     <View style={styles.searchContainer}>
@@ -355,11 +374,36 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
     },
-
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+        marginTop: 20,
+        borderRadius: 12,
+        marginBottom: 20,
+    },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    contactButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     content: {
         flex: 1,
         paddingHorizontal: 20,
-        paddingTop: 20,
+        paddingTop: 0,
     },
     searchContainer: {
         flexDirection: 'row',

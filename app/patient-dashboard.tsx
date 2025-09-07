@@ -2266,7 +2266,7 @@ export default function PatientDashboard() {
                     paddingVertical: 4,
                     borderRadius: 12,
                     marginRight: 8,
-                  }}>Available</Text>
+                  }}>{doctor.country || 'Available'}</Text>
                   {doctor.is_online && (
                     <View style={{
                       width: 8,
@@ -2288,7 +2288,7 @@ export default function PatientDashboard() {
                 <Text style={{
                   fontSize: 14,
                   color: '#666',
-                  marginBottom: 12,
+                  marginBottom: 8,
                   lineHeight: 20,
                 }}>
                   {(() => {
@@ -2301,6 +2301,17 @@ export default function PatientDashboard() {
                     return `${specializationText} with ${doctor.years_of_experience || 0}+ years of experience`;
                   })()}
                 </Text>
+                
+                {doctor.languages_spoken && doctor.languages_spoken.length > 0 && (
+                  <Text style={{
+                    fontSize: 12,
+                    color: '#888',
+                    marginBottom: 12,
+                    fontStyle: 'italic',
+                  }}>
+                    Languages: {doctor.languages_spoken.join(', ')}
+                  </Text>
+                )}
                 <TouchableOpacity 
                   style={{
                     backgroundColor: '#4CAF50',

@@ -608,6 +608,10 @@ export default function PatientSignUp() {
     const verifyEmail = async () => {
         try {
             setIsVerifying(true);
+            
+            // Add a small delay to prevent rapid successive calls
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
             const response = await authService.verifyEmail(email, verificationCode);
             
             if (response.success) {

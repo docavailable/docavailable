@@ -559,6 +559,9 @@ class AuthService {
     try {
       console.log('AuthService: Verifying email with code for:', email);
       
+      // Add a small delay to prevent race conditions
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const response = await this.api.post('/verify-email', { email, code });
       
       console.log('AuthService: Email verification response:', {

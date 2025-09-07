@@ -32,6 +32,7 @@ interface DoctorProfile {
   specialization: string;
   specializations?: string[];
   sub_specialization?: string;
+  languages_spoken?: string[];
   years_of_experience: number;
   bio?: string;
   rating: number;
@@ -307,6 +308,17 @@ export default function DoctorProfilePage() {
               </Text>
             </View>
           )}
+
+          {doctor.languages_spoken && doctor.languages_spoken.length > 0 && (
+            <View style={styles.detailRow}>
+              <FontAwesome name="language" size={16} color="#666" />
+              <View style={styles.languagesContainer}>
+                <Text style={styles.detailText}>
+                  {doctor.languages_spoken.join(', ')}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Action Buttons */}
@@ -497,6 +509,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#666',
     marginLeft: 8,
+  },
+  languagesContainer: {
+    flex: 1,
+    flexWrap: 'wrap',
   },
   ratingContainer: {
     flexDirection: 'row',

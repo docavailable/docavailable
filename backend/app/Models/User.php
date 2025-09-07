@@ -35,6 +35,7 @@ class User extends Authenticatable implements JWTSubject
         'sub_specialization',
         'specializations',
         'sub_specializations',
+        'languages_spoken',
         'bio',
         'health_history',
         'status',
@@ -117,6 +118,7 @@ class User extends Authenticatable implements JWTSubject
         'notification_preferences' => 'array',
         'specializations' => 'array',
         'sub_specializations' => 'array',
+        'languages_spoken' => 'array',
     ];
 
     /**
