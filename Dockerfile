@@ -53,4 +53,4 @@ RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 EXPOSE 8000
 
 # Start server with proper configuration
-CMD ["sh", "-c", "cd backend && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force || echo 'Migration failed, continuing anyway' && php artisan serve --host=0.0.0.0 --port=8000"]
+CMD ["sh", "-c", "cd backend && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force || echo 'Migration failed, continuing anyway' && echo 'Starting server on port 8000' && php artisan serve --host=0.0.0.0 --port=8000"]
