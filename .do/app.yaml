@@ -9,6 +9,7 @@ services:
   instance_count: 1
   instance_size_slug: basic-xxs
   http_port: 8000
+  run_command: php -S 0.0.0.0:8000 -t public
   envs:
   - key: APP_NAME
     value: DocAvailable
