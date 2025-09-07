@@ -35,3 +35,19 @@ services:
     value: ${DB_URL}
   - key: DB_SSLMODE
     value: ${DB_SSLMODE}
+  - key: MAIL_MAILER
+    value: smtp
+  - key: MAIL_HOST
+    value: smtp.gmail.com
+  - key: MAIL_PORT
+    value: "587"
+  - key: MAIL_USERNAME
+    value: ${MAIL_USERNAME}
+  - key: MAIL_PASSWORD
+    value: ${MAIL_PASSWORD}
+  - key: MAIL_ENCRYPTION
+    value: tls
+  - key: MAIL_FROM_ADDRESS
+    value: ${MAIL_FROM_ADDRESS}
+  - key: MAIL_FROM_NAME
+    value: DocAvailable
