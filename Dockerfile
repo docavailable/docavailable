@@ -49,8 +49,8 @@ RUN if [ ! -f .env ]; then cp .env.example .env; fi
 RUN php artisan key:generate --force || echo "Key already exists"
 RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port 8080
+EXPOSE 8080
 
 # Start server with proper configuration
-CMD ["sh", "-c", "cd backend && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force || echo 'Migration failed, continuing anyway' && echo 'Starting server on port 8000' && php artisan serve --host=0.0.0.0 --port=8000"]
+CMD ["sh", "-c", "cd backend && echo 'Starting Laravel application...' && php artisan config:clear && php artisan cache:clear && echo 'Testing database connection...' && php artisan tinker --execute='DB::connection()->getPdo(); echo \"Database connected successfully\";' && echo 'Starting server...' && php artisan serve --host=0.0.0.0 --port=8080"]
