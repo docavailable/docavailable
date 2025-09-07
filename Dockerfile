@@ -53,4 +53,4 @@ RUN php artisan jwt:secret --force || echo "JWT secret already exists"
 EXPOSE 8080
 
 # Start server with proper configuration
-CMD ["sh", "-c", "cd backend && echo 'Starting Laravel application...' && php artisan config:clear && php artisan cache:clear && echo 'Testing database connection...' && php artisan tinker --execute='DB::connection()->getPdo(); echo \"Database connected successfully\";' && echo 'Starting server...' && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "cd backend && echo '=== LARAVEL STARTUP ===' && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && echo 'Testing database connection...' && php artisan tinker --execute='DB::connection()->getPdo(); echo \"Database connected successfully\";' && echo 'Running migrations...' && php artisan migrate --force || echo 'Migration failed, continuing anyway' && echo 'Starting Laravel server...' && php -S 0.0.0.0:8080 -t public"]
