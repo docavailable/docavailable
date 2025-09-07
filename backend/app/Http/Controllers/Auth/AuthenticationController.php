@@ -256,8 +256,6 @@ class AuthenticationController extends Controller
 
             $credentials = $request->only('email', 'password');
 
-            $credentials = $request->only('email', 'password');
-
             if (!$token = auth('api')->attempt($credentials)) {
                 // Check if user exists to provide more specific error message
                 $user = \App\Models\User::where('email', $credentials['email'])->first();
@@ -270,24 +268,10 @@ class AuthenticationController extends Controller
                         'suggestion' => 'If you don\'t have an account, please register first.'
                     ], 401);
                 } else {
-                    // Check if account is suspended
-                    if ($user->status === 'suspended') {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Your account has been suspended. Please contact support for assistance.',
-                            'error_type' => 'account_suspended',
-                            'suggestion' => 'Contact our support team to reactivate your account.'
-                        ], 403);
-                    }
-                    
-                    // Check if account is pending approval (for doctors)
-                    if ($user->user_type === 'doctor' && $user->status === 'pending') {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Your account is pending approval. Please wait for admin approval.',
-                            'error_type' => 'account_pending',
-                            'suggestion' => 'You will receive an email notification once your account is approved.'
-                        ], 403);
+                    // Check user status for existing user with wrong password
+                    $statusCheck = $this->checkUserStatus($user);
+                    if ($statusCheck !== null) {
+                        return $statusCheck;
                     }
                     
                     return response()->json([
@@ -301,25 +285,11 @@ class AuthenticationController extends Controller
 
             $user = auth('api')->user();
 
-            // Additional checks after successful authentication
-            if ($user->status === 'suspended') {
+            // Check user status after successful authentication
+            $statusCheck = $this->checkUserStatus($user);
+            if ($statusCheck !== null) {
                 auth('api')->logout();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your account has been suspended. Please contact support for assistance.',
-                    'error_type' => 'account_suspended',
-                    'suggestion' => 'Contact our support team to reactivate your account.'
-                ], 403);
-            }
-
-            if ($user->user_type === 'doctor' && $user->status === 'pending') {
-                auth('api')->logout();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your account is pending approval. Please wait for admin approval.',
-                    'error_type' => 'account_pending',
-                    'suggestion' => 'You will receive an email notification once your account is approved.'
-                ], 403);
+                return $statusCheck;
             }
 
             Log::info('User logged in successfully', [
@@ -1108,5 +1078,33 @@ class AuthenticationController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Check user status and return appropriate error response if needed
+     */
+    private function checkUserStatus($user)
+    {
+        // Check if account is suspended
+        if ($user->status === 'suspended') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been suspended. Please contact support for assistance.',
+                'error_type' => 'account_suspended',
+                'suggestion' => 'Contact our support team to reactivate your account.'
+            ], 403);
+        }
+        
+        // Check if account is pending approval (for doctors)
+        if ($user->user_type === 'doctor' && $user->status === 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is pending approval. Please wait for admin approval.',
+                'error_type' => 'account_pending',
+                'suggestion' => 'You will receive an email notification once your account is approved.'
+            ], 403);
+        }
+
+        return null; // No status issues
     }
 } 
