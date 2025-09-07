@@ -178,7 +178,12 @@ export default function AdminSignUp() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <>
+                <ActivityIndicator color="#FFFFFF" size="small" />
+                <Text style={[styles.signUpButtonText, { marginLeft: 8 }]}>
+                  Creating Account...
+                </Text>
+              </>
             ) : (
               <Text style={styles.signUpButtonText}>Create Admin Account</Text>
             )}
@@ -247,6 +252,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
     marginTop: 20,
   },
   signUpButtonDisabled: {

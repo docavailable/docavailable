@@ -964,11 +964,19 @@ export default function DoctorSignUp() {
                         disabled={loading}
                     >
                         {loading ? (
-                            <ActivityIndicator color="#fff" />
+                            <>
+                                <ActivityIndicator color="#FFFFFF" size="small" />
+                                <Text style={[styles.continueButtonText, { marginLeft: 8 }]}>
+                                    {step === 3 ? 'Creating Account...' : 'Processing...'}
+                                </Text>
+                            </>
                         ) : (
-                            <Text style={styles.continueButtonText}>
-                                {step === 3 ? 'Complete Registration' : 'Continue'}
-                            </Text>
+                            <>
+                                <Text style={styles.continueButtonText}>
+                                    {step === 3 ? 'Complete Registration' : 'Continue'}
+                                </Text>
+                                <Text style={styles.arrowIcon}>→</Text>
+                            </>
                         )}
                     </TouchableOpacity>
                 </View>
@@ -1493,5 +1501,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 20,
         flex: 1,
+    },
+    arrowIcon: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 }); 

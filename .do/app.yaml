@@ -8,7 +8,7 @@ services:
   environment_slug: php
   instance_count: 1
   instance_size_slug: basic-xxs
-  http_port: 8080
+  http_port: 8000
   envs:
   - key: APP_NAME
     value: DocAvailable
@@ -17,4 +17,20 @@ services:
   - key: APP_DEBUG
     value: false
   - key: APP_URL
-    value: https://docavailable-backend.ondigitalocean.app
+    value: ${APP_URL}
+  - key: DB_CONNECTION
+    value: ${DB_CONNECTION}
+  - key: DB_HOST
+    value: ${DB_HOST}
+  - key: DB_PORT
+    value: ${DB_PORT}
+  - key: DB_DATABASE
+    value: ${DB_DATABASE}
+  - key: DB_USERNAME
+    value: ${DB_USERNAME}
+  - key: DB_PASSWORD
+    value: ${DB_PASSWORD}
+  - key: DB_URL
+    value: ${DB_URL}
+  - key: DB_SSLMODE
+    value: ${DB_SSLMODE}
