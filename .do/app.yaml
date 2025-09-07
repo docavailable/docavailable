@@ -52,3 +52,22 @@ services:
     value: Docavailable01@gmail.com
   - key: MAIL_FROM_NAME
     value: DocAvailable
+  # PayChangu Configuration
+  - key: PAYCHANGU_PUBLIC_KEY
+    value: ${PAYCHANGU_PUBLIC_KEY}
+  - key: PAYCHANGU_SECRET_KEY
+    value: ${PAYCHANGU_SECRET_KEY}
+  - key: PAYCHANGU_MERCHANT_ID
+    value: ${PAYCHANGU_MERCHANT_ID}
+  - key: PAYCHANGU_WEBHOOK_SECRET
+    value: ${PAYCHANGU_WEBHOOK_SECRET}
+  - key: PAYCHANGU_ENVIRONMENT
+    value: production
+  - key: PAYCHANGU_PAYMENT_URL
+    value: https://api.paychangu.com/payment
+  - key: PAYCHANGU_VERIFY_URL
+    value: https://api.paychangu.com/verify-payment
+  - key: PAYCHANGU_CALLBACK_URL
+    value: https://docavailable-3vbdv.ondigitalocean.app/api/payments/webhook
+  - key: PAYCHANGU_RETURN_URL
+    value: https://docavailable-3vbdv.ondigitalocean.app/payment/success

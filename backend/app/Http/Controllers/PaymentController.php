@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Subscription;
 use App\Models\Plan;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
@@ -208,72 +209,23 @@ class PaymentController extends Controller
                 $paymentMetadata['card_details'] = $data['authorization']['card_details'];
             }
             
-            // Check if user already has an active subscription
-            $existingSubscription = Subscription::where('user_id', $userId)
-                ->where('status', 1)
-                ->first();
-            
-            if ($existingSubscription) {
-                // Update existing subscription with new sessions
-                $subscriptionData = [
-                    'text_sessions_remaining' => $existingSubscription->text_sessions_remaining + ($plan ? $plan->text_sessions : 0),
-                    'voice_calls_remaining' => $existingSubscription->voice_calls_remaining + ($plan ? $plan->voice_calls : 0),
-                    'video_calls_remaining' => $existingSubscription->video_calls_remaining + ($plan ? $plan->video_calls : 0),
-                    'total_text_sessions' => $existingSubscription->total_text_sessions + ($plan ? $plan->text_sessions : 0),
-                    'total_voice_calls' => $existingSubscription->total_voice_calls + ($plan ? $plan->voice_calls : 0),
-                    'total_video_calls' => $existingSubscription->total_video_calls + ($plan ? $plan->video_calls : 0),
-                    'end_date' => now()->addDays($plan ? $plan->duration : 30),
+            // Use the centralized activatePlanForUser method
+            if ($plan) {
+                $subscription = $this->activatePlanForUser($userId, $plan->id, $transactionId);
+                
+                // Update with payment metadata
+                $subscription->update([
                     'payment_metadata' => $paymentMetadata,
-                    'is_active' => true
-                ];
-                
-                if ($plan) {
-                    $subscriptionData['plan_id'] = $plan->id;
-                    $subscriptionData['plan_name'] = $plan->name;
-                    $subscriptionData['plan_price'] = $plan->price;
-                    $subscriptionData['plan_currency'] = $plan->currency;
-                }
-                
-                $existingSubscription->update($subscriptionData);
-                $subscription = $existingSubscription;
-                
-                Log::info('Updated existing subscription', [
-                    'subscription_id' => $subscription->id,
-                    'transaction_id' => $transactionId
+                    'payment_gateway' => 'paychangu'
                 ]);
             } else {
-                // Create new subscription
-                $subscriptionData = [
+                Log::error('No plan found for payment processing', [
                     'user_id' => $userId,
-                    'status' => 1, // Active
-                    'start_date' => now(),
-                    'end_date' => now()->addDays($plan ? $plan->duration : 30),
-                    'payment_metadata' => $paymentMetadata,
-                    'is_active' => true,
-                    'activated_at' => now()
-                ];
-                
-                if ($plan) {
-                    $subscriptionData['plan_id'] = $plan->id;
-                    $subscriptionData['plan_name'] = $plan->name;
-                    $subscriptionData['plan_price'] = $plan->price;
-                    $subscriptionData['plan_currency'] = $plan->currency;
-                    $subscriptionData['text_sessions_remaining'] = $plan->text_sessions;
-                    $subscriptionData['voice_calls_remaining'] = $plan->voice_calls;
-                    $subscriptionData['video_calls_remaining'] = $plan->video_calls;
-                    $subscriptionData['total_text_sessions'] = $plan->text_sessions;
-                    $subscriptionData['total_voice_calls'] = $plan->voice_calls;
-                    $subscriptionData['total_video_calls'] = $plan->video_calls;
-                }
-                
-                Log::info('Creating new subscription with data:', ['data' => $subscriptionData]);
-                
-                $subscription = Subscription::create($subscriptionData);
-                
-                Log::info('Created new subscription', [
-                    'subscription_id' => $subscription->id,
-                    'transaction_id' => $transactionId
+                    'plan_id' => $planId,
+                    'amount' => $amount,
+                    'currency' => $currency
                 ]);
+                throw new \Exception('No plan found for payment processing');
             }
             
             Log::info('Payment processed successfully', [
@@ -677,6 +629,95 @@ class PaymentController extends Controller
                 'message' => 'Test webhook failed',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Activate plan for user after successful payment
+     */
+    protected function activatePlanForUser($userId, $planId, $transactionId)
+    {
+        try {
+            $plan = Plan::findOrFail($planId);
+            $user = User::findOrFail($userId);
+            
+            Log::info('Activating plan for user', [
+                'user_id' => $userId,
+                'plan_id' => $planId,
+                'transaction_id' => $transactionId
+            ]);
+            
+            // Check for existing active subscription
+            $existingSubscription = Subscription::where('user_id', $userId)
+                ->where('is_active', true)
+                ->first();
+                
+            if ($existingSubscription) {
+                // Update existing subscription with new sessions
+                $subscriptionData = [
+                    'text_sessions_remaining' => $existingSubscription->text_sessions_remaining + $plan->text_sessions,
+                    'voice_calls_remaining' => $existingSubscription->voice_calls_remaining + $plan->voice_calls,
+                    'video_calls_remaining' => $existingSubscription->video_calls_remaining + $plan->video_calls,
+                    'total_text_sessions' => $existingSubscription->total_text_sessions + $plan->text_sessions,
+                    'total_voice_calls' => $existingSubscription->total_voice_calls + $plan->voice_calls,
+                    'total_video_calls' => $existingSubscription->total_video_calls + $plan->video_calls,
+                    'end_date' => now()->addDays($plan->duration),
+                    'payment_transaction_id' => $transactionId,
+                    'payment_status' => 'completed',
+                    'is_active' => true,
+                    'activated_at' => now()
+                ];
+                
+                $existingSubscription->update($subscriptionData);
+                
+                Log::info('Updated existing subscription', [
+                    'subscription_id' => $existingSubscription->id,
+                    'user_id' => $userId,
+                    'plan_id' => $planId
+                ]);
+                
+                return $existingSubscription;
+            } else {
+                // Create new subscription
+                $subscriptionData = [
+                    'user_id' => $userId,
+                    'plan_id' => $planId,
+                    'plan_name' => $plan->name,
+                    'plan_price' => $plan->price,
+                    'plan_currency' => $plan->currency,
+                    'status' => 'active',
+                    'start_date' => now(),
+                    'end_date' => now()->addDays($plan->duration),
+                    'is_active' => true,
+                    'payment_transaction_id' => $transactionId,
+                    'payment_status' => 'completed',
+                    'text_sessions_remaining' => $plan->text_sessions,
+                    'voice_calls_remaining' => $plan->voice_calls,
+                    'video_calls_remaining' => $plan->video_calls,
+                    'total_text_sessions' => $plan->text_sessions,
+                    'total_voice_calls' => $plan->voice_calls,
+                    'total_video_calls' => $plan->video_calls,
+                    'activated_at' => now()
+                ];
+                
+                $subscription = Subscription::create($subscriptionData);
+                
+                Log::info('Created new subscription', [
+                    'subscription_id' => $subscription->id,
+                    'user_id' => $userId,
+                    'plan_id' => $planId
+                ]);
+                
+                return $subscription;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to activate plan for user: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'plan_id' => $planId,
+                'transaction_id' => $transactionId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
     }
 }

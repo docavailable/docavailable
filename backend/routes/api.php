@@ -747,7 +747,6 @@ Route::middleware(['auth:api'])->group(function () {
     
     // User & Subscription routes
     Route::get('/subscription', [UserController::class, 'subscription']);
-    Route::post('/create_subscription', [UserController::class, 'create_subscription']);
     Route::patch('/update_subscription', [UserController::class, 'update_subscription']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::get('/subscriptions/patient/{patientId}', [UserController::class, 'getPatientSubscription']);
