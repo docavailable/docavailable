@@ -127,6 +127,22 @@ export default function DoctorProfilePage() {
   const handleDirectBooking = async () => {
     if (!doctor || !userData) return;
     
+    // Debug: Log subscription data
+    console.log('🔍 [handleDirectBooking] Subscription check:', {
+      currentSubscription,
+      textSessionsRemaining: currentSubscription?.textSessionsRemaining,
+      hasSubscription: !!currentSubscription,
+      subscriptionKeys: currentSubscription ? Object.keys(currentSubscription) : []
+    });
+    
+    // Check if user has subscription with text sessions
+    if (!currentSubscription || (currentSubscription.textSessionsRemaining || 0) <= 0) {
+      console.log('❌ [handleDirectBooking] No subscription or no sessions remaining');
+      setShowSubscriptionModal(true);
+      return;
+    }
+    
+    console.log('✅ [handleDirectBooking] Subscription check passed, showing booking options');
     // Show the booking options modal first
     setShowBookingOptionsModal(true);
   };
