@@ -127,12 +127,6 @@ export default function DoctorProfilePage() {
   const handleDirectBooking = async () => {
     if (!doctor || !userData) return;
     
-    // Check if user has subscription with text sessions
-    if (!currentSubscription || (currentSubscription.textSessionsRemaining || 0) <= 0) {
-      setShowSubscriptionModal(true);
-      return;
-    }
-    
     // Show the booking options modal first
     setShowBookingOptionsModal(true);
   };
