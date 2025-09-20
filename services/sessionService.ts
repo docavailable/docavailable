@@ -261,8 +261,11 @@ class SessionService {
 
   /**
    * Calculate sessions to deduct based on elapsed time
-   * Auto-deductions happen at 10-minute intervals
-   * Manual end always adds 1 session
+   * NEW BUSINESS LOGIC:
+   * - Auto-deductions happen at 10-minute intervals (10, 20, 30, etc.)
+   * - Manual end always adds 1 session
+   * - 4000 MWK goes to doctor for each deduction
+   * - No deduction if doctor doesn't respond within 90 seconds
    */
   calculateSessionsToDeduct(elapsedMinutes: number, isManualEnd: boolean = false): number {
     const autoDeductions = Math.floor(elapsedMinutes / 10);
@@ -310,19 +313,24 @@ class SessionService {
 
   /**
    * Get session billing information
+   * NEW BUSINESS LOGIC: 4000 MWK goes to doctor for each deduction
    */
   getSessionBillingInfo(elapsedMinutes: number, isManualEnd: boolean = false) {
     const autoDeductions = Math.floor(elapsedMinutes / 10);
     const manualDeduction = isManualEnd ? 1 : 0;
     const totalDeductions = autoDeductions + manualDeduction;
     const timeUntilNextDeduction = this.getTimeUntilNextDeduction(elapsedMinutes);
+    const doctorPaymentPerDeduction = 4000; // MWK
+    const totalDoctorPayment = totalDeductions * doctorPaymentPerDeduction;
     
     return {
       autoDeductions,
       manualDeduction,
       totalDeductions,
       timeUntilNextDeduction,
-      elapsedMinutes
+      elapsedMinutes,
+      doctorPaymentPerDeduction,
+      totalDoctorPayment
     };
   }
 }

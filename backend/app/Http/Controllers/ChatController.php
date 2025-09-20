@@ -336,6 +336,15 @@ class ChatController extends Controller
             ]);
             
             if ($session) {
+                Log::info("Text session found", [
+                    'session_id' => $sessionId,
+                    'session_status' => $session->status,
+                    'patient_id' => $session->patient_id,
+                    'doctor_id' => $session->doctor_id,
+                    'user_id' => $user->id,
+                    'user_type' => $user->user_type
+                ]);
+                
                 // Check if this is the first patient message (to start the 90-second timer)
                 if ($session->status === \App\Models\TextSession::STATUS_WAITING_FOR_DOCTOR && $user->id === $session->patient_id) {
                     Log::info("Patient message detected in waiting session", [
@@ -370,6 +379,16 @@ class ChatController extends Controller
                 }
                 
                 // Check if this is the first doctor message (to activate the session)
+                Log::info("Checking doctor message activation", [
+                    'session_id' => $sessionId,
+                    'session_status' => $session->status,
+                    'user_id' => $user->id,
+                    'doctor_id' => $session->doctor_id,
+                    'is_doctor' => $user->id === $session->doctor_id,
+                    'is_waiting' => $session->status === \App\Models\TextSession::STATUS_WAITING_FOR_DOCTOR,
+                    'message' => substr($request->message, 0, 50) . '...'
+                ]);
+                
                 if ($session->status === \App\Models\TextSession::STATUS_WAITING_FOR_DOCTOR && $user->id === $session->doctor_id) {
                     Log::info("Doctor message detected in waiting session, activating", [
                         'session_id' => $sessionId,
@@ -389,6 +408,15 @@ class ChatController extends Controller
                         'new_status' => \App\Models\TextSession::STATUS_ACTIVE,
                         'auto_deductions' => 'scheduler-based',
                         'auto_ending' => 'existing-process'
+                    ]);
+                } else {
+                    Log::info("Doctor message activation conditions not met", [
+                        'session_id' => $sessionId,
+                        'session_status' => $session->status,
+                        'user_id' => $user->id,
+                        'doctor_id' => $session->doctor_id,
+                        'is_doctor' => $user->id === $session->doctor_id,
+                        'is_waiting' => $session->status === \App\Models\TextSession::STATUS_WAITING_FOR_DOCTOR
                     ]);
                 }
             } else {

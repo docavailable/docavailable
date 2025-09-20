@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import BookingOptionsModal from '../../../components/BookingOptionsModal';
 import DirectBookingModal from '../../../components/DirectBookingModal';
 import DoctorProfilePicture from '../../../components/DoctorProfilePicture';
 import SubscriptionModal from '../../../components/SubscriptionModal';
@@ -53,7 +54,9 @@ export default function DoctorProfilePage() {
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [showBookingOptionsModal, setShowBookingOptionsModal] = useState(false);
   const [showDirectBookingModal, setShowDirectBookingModal] = useState(false);
+  const [selectedSessionType, setSelectedSessionType] = useState<'text' | 'audio' | 'video'>('text');
   const [currentSubscription, setCurrentSubscription] = useState<any>(null);
 
   useEffect(() => {
@@ -84,7 +87,7 @@ export default function DoctorProfilePage() {
   const fetchDoctorProfile = async () => {
     try {
       setLoading(true);
-      const response = await apiService.get<DoctorProfile>(`/doctors/${uid}`);
+      const response = await apiService.get(`/doctors/${uid}`);
       
       if (response.success && response.data) {
         setDoctor(response.data);
@@ -130,11 +133,16 @@ export default function DoctorProfilePage() {
       return;
     }
     
-    // Show the direct booking modal instead of directly calling the API
+    // Show the booking options modal first
+    setShowBookingOptionsModal(true);
+  };
+
+  const handleBookingOptionSelect = (option: 'text' | 'audio' | 'video') => {
+    setSelectedSessionType(option);
     setShowDirectBookingModal(true);
   };
 
-  const handleDirectBookingConfirm = async (reason: string) => {
+  const handleDirectBookingConfirm = async (reason: string, sessionType: 'text' | 'audio' | 'video') => {
     if (!doctor || !userData) return;
     
     try {
@@ -355,12 +363,21 @@ export default function DoctorProfilePage() {
         onBuySessions={handleBuySessions}
       />
 
+      {/* Booking Options Modal */}
+      <BookingOptionsModal
+        visible={showBookingOptionsModal}
+        onClose={() => setShowBookingOptionsModal(false)}
+        onSelectOption={handleBookingOptionSelect}
+        doctorName={`${doctor?.first_name} ${doctor?.last_name}`}
+      />
+
       {/* Direct Booking Modal */}
       <DirectBookingModal
         visible={showDirectBookingModal}
         onClose={() => setShowDirectBookingModal(false)}
         onConfirm={handleDirectBookingConfirm}
         doctorName={`${doctor?.first_name} ${doctor?.last_name}`}
+        sessionType={selectedSessionType}
       />
     </SafeAreaView>
   );

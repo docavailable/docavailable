@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import AudioCall from '../../components/AudioCall';
 import AudioCallModal from '../../components/AudioCallModal';
+import ChatSkeleton from '../../components/ChatSkeleton';
 import { Icon } from '../../components/Icon';
 import ImageMessage from '../../components/ImageMessage';
 import RatingModal from '../../components/RatingModal';
@@ -175,7 +176,8 @@ export default function ChatPage() {
   
   // Determine if call button should be enabled
   const isCallEnabled = () => {
-    const enabled = isTextSession ? true : (appointmentType === 'audio' || appointmentType === 'voice');
+    // Disable audio/video calls for text sessions - only allow text chat
+    const enabled = isTextSession ? false : (appointmentType === 'audio' || appointmentType === 'voice');
     console.log('🔍 [isCallEnabled] Debug:', {
       isTextSession,
       appointmentType,
@@ -1491,15 +1493,7 @@ export default function ChatPage() {
   // console.log('🔍 endingSession state:', endingSession);
 
   if (loading) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-        <StatusBar barStyle="dark-content" />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={{ marginTop: 10, color: '#666' }}>Loading chat...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <ChatSkeleton messageCount={6} />;
   }
 
   return (
@@ -1634,7 +1628,9 @@ export default function ChatPage() {
               } else {
                 Alert.alert(
                   'Call Not Available',
-                  'Video calls are only available during active sessions or when the doctor is online.',
+                  isTextSession 
+                    ? 'Audio and video calls are not available for text sessions. Please use text chat only.'
+                    : 'Video calls are only available during active sessions or when the doctor is online.',
                   [{ text: 'OK' }]
                 );
               }
@@ -1687,7 +1683,15 @@ export default function ChatPage() {
                       ? 'Call Not Available: Call feature is not available for this session type.'
                       : 'Call Not Available: Call feature is only available for audio appointments.'
                   );
-                  // Call not available - logged to console only
+                  
+                  // Show alert for better user experience
+                  Alert.alert(
+                    'Call Not Available',
+                    isTextSession 
+                      ? 'Audio and video calls are not available for text sessions. Please use text chat only.'
+                      : 'Audio calls are only available for audio appointments.',
+                    [{ text: 'OK' }]
+                  );
                 }
               }}
               disabled={!isCallButtonEnabled()}

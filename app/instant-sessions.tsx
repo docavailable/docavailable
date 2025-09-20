@@ -1,18 +1,19 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import BookingOptionsModal from '../components/BookingOptionsModal';
+import DirectBookingModal from '../components/DirectBookingModal';
+import ListSkeleton from '../components/ListSkeleton';
 import { Colors } from '../constants/Colors';
 import { useAuth } from '../contexts/AuthContext';
-import DirectBookingModal from '../components/DirectBookingModal';
 
 interface Doctor {
   id: number;
@@ -63,8 +64,10 @@ export default function InstantSessionsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeSession, setActiveSession] = useState<SessionInfo | null>(null);
   const [startingSession, setStartingSession] = useState(false);
+  const [showBookingOptionsModal, setShowBookingOptionsModal] = useState(false);
   const [showDirectBookingModal, setShowDirectBookingModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [selectedSessionType, setSelectedSessionType] = useState<'text' | 'audio' | 'video'>('text');
 
   const fetchAvailableDoctors = async () => {
     try {
@@ -110,10 +113,15 @@ export default function InstantSessionsScreen() {
 
   const handleStartSession = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
+    setShowBookingOptionsModal(true);
+  };
+
+  const handleBookingOptionSelect = (option: 'text' | 'audio' | 'video') => {
+    setSelectedSessionType(option);
     setShowDirectBookingModal(true);
   };
 
-  const startSession = async (reason: string) => {
+  const startSession = async (reason: string, sessionType: 'text' | 'audio' | 'video') => {
     if (!selectedDoctor) return;
     
     setStartingSession(true);
@@ -173,12 +181,7 @@ export default function InstantSessionsScreen() {
   }, []);
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading available doctors...</Text>
-      </View>
-    );
+    return <ListSkeleton itemCount={6} showHeader={true} itemHeight={100} />;
   }
 
     return (
@@ -294,11 +297,19 @@ export default function InstantSessionsScreen() {
         </View>
       </ScrollView>
 
+      <BookingOptionsModal
+        visible={showBookingOptionsModal}
+        onClose={() => setShowBookingOptionsModal(false)}
+        onSelectOption={handleBookingOptionSelect}
+        doctorName={selectedDoctor ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}` : ''}
+      />
+
       <DirectBookingModal
         visible={showDirectBookingModal}
         onClose={() => setShowDirectBookingModal(false)}
         onConfirm={startSession}
         doctorName={selectedDoctor ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}` : ''}
+        sessionType={selectedSessionType}
         loading={startingSession}
       />
     </>

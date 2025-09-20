@@ -634,4 +634,58 @@ class TextSessionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Activate a text session (called when doctor sends first message)
+     */
+    public function activate(Request $request, $sessionId): JsonResponse
+    {
+        try {
+            $session = TextSession::find($sessionId);
+            
+            if (!$session) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session not found'
+                ], 404);
+            }
+
+            if ($session->status !== TextSession::STATUS_WAITING_FOR_DOCTOR) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session is not waiting for doctor response'
+                ], 400);
+            }
+
+            // Activate the session
+            $session->activate();
+
+            Log::info("Text session activated via API", [
+                'session_id' => $sessionId,
+                'activated_at' => now(),
+                'status' => $session->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Session activated successfully',
+                'data' => [
+                    'session_id' => $session->id,
+                    'status' => $session->status,
+                    'activated_at' => $session->activated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to activate text session: ' . $e->getMessage(), [
+                'session_id' => $sessionId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to activate session: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

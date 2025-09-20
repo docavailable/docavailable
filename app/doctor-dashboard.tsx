@@ -22,6 +22,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import ListSkeleton from '../components/ListSkeleton';
 
 import { FontAwesome } from '@expo/vector-icons';
 import { apiService } from '../app/services/apiService';
@@ -1463,10 +1464,7 @@ export default function DoctorDashboard() {
       <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#222', marginLeft: 24, marginBottom: 10 }}>Recent</Text>
 
       {loadingConfirmed || loadingTextSessions ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading patients...</Text>
-        </View>
+        <ListSkeleton itemCount={4} showHeader={false} itemHeight={90} />
       ) : (confirmedAppointments?.length || 0) === 0 && (activeTextSessions?.length || 0) === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyStateIcon}>

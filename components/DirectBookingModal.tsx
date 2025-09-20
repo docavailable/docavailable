@@ -1,5 +1,5 @@
 import { FontAwesome } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Alert,
     Modal,
@@ -14,8 +14,9 @@ import {
 interface DirectBookingModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (reason: string) => void;
+  onConfirm: (reason: string, sessionType: 'text' | 'audio' | 'video') => void;
   doctorName: string;
+  sessionType: 'text' | 'audio' | 'video';
   loading?: boolean;
 }
 
@@ -24,6 +25,7 @@ export default function DirectBookingModal({
   onClose,
   onConfirm,
   doctorName,
+  sessionType,
   loading = false,
 }: DirectBookingModalProps) {
   const [reason, setReason] = useState('');
@@ -33,7 +35,7 @@ export default function DirectBookingModal({
       Alert.alert('Reason Required', 'Please provide a reason for your session.');
       return;
     }
-    onConfirm(reason.trim());
+    onConfirm(reason.trim(), sessionType);
   };
 
   const handleClose = () => {
@@ -49,10 +51,12 @@ export default function DirectBookingModal({
             <FontAwesome name="clock-o" size={32} color="#4CAF50" />
           </View>
           
-          <Text style={styles.title}>Start Direct Session</Text>
+          <Text style={styles.title}>
+            Start {sessionType === 'text' ? 'Text' : sessionType === 'audio' ? 'Audio' : 'Video'} Session
+          </Text>
           
           <Text style={styles.subtitle}>
-            You're about to start a direct session with Dr. {doctorName}
+            You're about to start a {sessionType} session with Dr. {doctorName}
           </Text>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -74,10 +78,6 @@ export default function DirectBookingModal({
                 <Text style={styles.infoText}>You won't be charged if doctor doesn't respond in time</Text>
               </View>
               
-              <View style={styles.infoItem}>
-                <FontAwesome name="credit-card" size={16} color="#4CAF50" />
-                <Text style={styles.infoText}>Uses 1 text session per 10 minutes </Text>
-              </View>
             </View>
 
             <View style={styles.reasonSection}>

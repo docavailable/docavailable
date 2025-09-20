@@ -385,9 +385,17 @@ async function handleChatMessage(appointmentId, data, senderWs) {
 // Check if message triggers session activation
 async function checkSessionActivation(appointmentId, message, messageData) {
   try {
+    console.log(`🔍 [checkSessionActivation] Checking activation for appointment ${appointmentId}:`, {
+      isTextSession: appointmentId.startsWith('text_session_'),
+      senderId: messageData.sender_id,
+      messageType: message.message_type
+    });
+    
     // Check if this is a text session (instant session)
     if (appointmentId.startsWith('text_session_')) {
       const sessionId = appointmentId.replace('text_session_', '');
+      
+      console.log(`🔍 [checkSessionActivation] Getting session status for session ${sessionId}`);
       
       // Get session status from your API
       const sessionResponse = await axios.get(`${API_BASE_URL}/api/text-sessions/${sessionId}/status`, {
@@ -397,16 +405,25 @@ async function checkSessionActivation(appointmentId, message, messageData) {
         }
       });
 
+      console.log(`🔍 [checkSessionActivation] Session status response:`, {
+        success: sessionResponse.data.success,
+        status: sessionResponse.data.data?.status,
+        doctorId: sessionResponse.data.data?.doctor_id,
+        patientId: sessionResponse.data.data?.patient_id
+      });
+
       if (sessionResponse.data.success) {
         const sessionData = sessionResponse.data.data;
         
         // If session is waiting for doctor and doctor sent message, activate
         if (sessionData.status === 'waiting_for_doctor' && messageData.sender_id === sessionData.doctor_id) {
-          await activateTextSession(sessionId, appointmentId);
+          console.log(`✅ [checkSessionActivation] Doctor message detected, activating session ${sessionId}`);
+          await activateTextSession(sessionId, appointmentId, message.authToken);
         }
         
         // If session is waiting and patient sent message, start 90-second timer
         if (sessionData.status === 'waiting_for_doctor' && messageData.sender_id === sessionData.patient_id) {
+          console.log(`⏰ [checkSessionActivation] Patient message detected, starting 90-second timer for session ${sessionId}`);
           await startDoctorResponseTimer(sessionId, appointmentId);
         }
       }
@@ -418,16 +435,25 @@ async function checkSessionActivation(appointmentId, message, messageData) {
 }
 
 // Activate text session when doctor sends first message
-async function activateTextSession(sessionId, appointmentId) {
+async function activateTextSession(sessionId, appointmentId, authToken) {
   try {
+    console.log(`🔄 [activateTextSession] Attempting to activate session ${sessionId} with auth token:`, !!authToken);
+    
     const response = await axios.post(`${API_BASE_URL}/api/text-sessions/${sessionId}/activate`, {}, {
       headers: {
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
       }
     });
 
+    console.log(`🔄 [activateTextSession] API response:`, {
+      success: response.data.success,
+      message: response.data.message,
+      data: response.data.data
+    });
+
     if (response.data.success) {
-      console.log(`✅ Text session ${sessionId} activated`);
+      console.log(`✅ Text session ${sessionId} activated successfully`);
       
       // Start auto-deduction timer (every 10 minutes)
       startAutoDeductionTimer(sessionId, appointmentId);
@@ -439,9 +465,17 @@ async function activateTextSession(sessionId, appointmentId) {
         sessionType: 'instant',
         activatedAt: new Date().toISOString()
       });
+    } else {
+      console.error(`❌ Failed to activate session ${sessionId}:`, response.data.message);
     }
   } catch (error) {
     console.error('❌ Error activating text session:', error);
+    if (error.response) {
+      console.error('❌ API Error Response:', {
+        status: error.response.status,
+        data: error.response.data
+      });
+    }
   }
 }
 
