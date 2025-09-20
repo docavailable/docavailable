@@ -12,6 +12,11 @@ interface BookingOptionsModalProps {
   onClose: () => void;
   onSelectOption: (option: 'text' | 'audio' | 'video') => void;
   doctorName: string;
+  subscription?: {
+    textSessionsRemaining?: number;
+    voiceCallsRemaining?: number;
+    videoCallsRemaining?: number;
+  } | null;
 }
 
 export default function BookingOptionsModal({
@@ -19,11 +24,17 @@ export default function BookingOptionsModal({
   onClose,
   onSelectOption,
   doctorName,
+  subscription,
 }: BookingOptionsModalProps) {
   const handleOptionSelect = (option: 'text' | 'audio' | 'video') => {
     onSelectOption(option);
     onClose();
   };
+
+  // Check if user has remaining sessions for each type
+  const hasTextSessions = !subscription || (subscription.textSessionsRemaining || 0) > 0;
+  const hasAudioCalls = !subscription || (subscription.voiceCallsRemaining || 0) > 0;
+  const hasVideoCalls = !subscription || (subscription.videoCallsRemaining || 0) > 0;
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -42,53 +53,119 @@ export default function BookingOptionsModal({
           <View style={styles.optionsContainer}>
             {/* Text Session Option */}
             <TouchableOpacity 
-              style={styles.optionButton}
-              onPress={() => handleOptionSelect('text')}
+              style={[
+                styles.optionButton,
+                !hasTextSessions && styles.optionButtonDisabled
+              ]}
+              onPress={() => hasTextSessions && handleOptionSelect('text')}
+              disabled={!hasTextSessions}
             >
-              <View style={styles.optionIcon}>
-                <FontAwesome name="comment" size={24} color="#4CAF50" />
+              <View style={[
+                styles.optionIcon,
+                !hasTextSessions && styles.optionIconDisabled
+              ]}>
+                <FontAwesome 
+                  name="comment" 
+                  size={24} 
+                  color={hasTextSessions ? "#4CAF50" : "#ccc"} 
+                />
               </View>
               <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>Text Session</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[
+                  styles.optionTitle,
+                  !hasTextSessions && styles.optionTitleDisabled
+                ]}>
+                  Text Session
+                  {!hasTextSessions && ' (No sessions remaining)'}
+                </Text>
+                <Text style={[
+                  styles.optionDescription,
+                  !hasTextSessions && styles.optionDescriptionDisabled
+                ]}>
                   Chat with the doctor via text messages
                 </Text>
               </View>
-              <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              {hasTextSessions && (
+                <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              )}
             </TouchableOpacity>
 
             {/* Audio Call Option */}
             <TouchableOpacity 
-              style={styles.optionButton}
-              onPress={() => handleOptionSelect('audio')}
+              style={[
+                styles.optionButton,
+                !hasAudioCalls && styles.optionButtonDisabled
+              ]}
+              onPress={() => hasAudioCalls && handleOptionSelect('audio')}
+              disabled={!hasAudioCalls}
             >
-              <View style={styles.optionIcon}>
-                <FontAwesome name="phone" size={24} color="#2196F3" />
+              <View style={[
+                styles.optionIcon,
+                !hasAudioCalls && styles.optionIconDisabled
+              ]}>
+                <FontAwesome 
+                  name="phone" 
+                  size={24} 
+                  color={hasAudioCalls ? "#2196F3" : "#ccc"} 
+                />
               </View>
               <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>Audio Call</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[
+                  styles.optionTitle,
+                  !hasAudioCalls && styles.optionTitleDisabled
+                ]}>
+                  Audio Call
+                  {!hasAudioCalls && ' (No calls remaining)'}
+                </Text>
+                <Text style={[
+                  styles.optionDescription,
+                  !hasAudioCalls && styles.optionDescriptionDisabled
+                ]}>
                   Voice call with the doctor
                 </Text>
               </View>
-              <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              {hasAudioCalls && (
+                <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              )}
             </TouchableOpacity>
 
             {/* Video Call Option */}
             <TouchableOpacity 
-              style={styles.optionButton}
-              onPress={() => handleOptionSelect('video')}
+              style={[
+                styles.optionButton,
+                !hasVideoCalls && styles.optionButtonDisabled
+              ]}
+              onPress={() => hasVideoCalls && handleOptionSelect('video')}
+              disabled={!hasVideoCalls}
             >
-              <View style={styles.optionIcon}>
-                <FontAwesome name="video-camera" size={24} color="#FF5722" />
+              <View style={[
+                styles.optionIcon,
+                !hasVideoCalls && styles.optionIconDisabled
+              ]}>
+                <FontAwesome 
+                  name="video-camera" 
+                  size={24} 
+                  color={hasVideoCalls ? "#FF5722" : "#ccc"} 
+                />
               </View>
               <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>Video Call</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[
+                  styles.optionTitle,
+                  !hasVideoCalls && styles.optionTitleDisabled
+                ]}>
+                  Video Call
+                  {!hasVideoCalls && ' (No calls remaining)'}
+                </Text>
+                <Text style={[
+                  styles.optionDescription,
+                  !hasVideoCalls && styles.optionDescriptionDisabled
+                ]}>
                   Video call with the doctor
                 </Text>
               </View>
-              <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              {hasVideoCalls && (
+                <FontAwesome name="chevron-right" size={16} color="#ccc" />
+              )}
             </TouchableOpacity>
           </View>
           
@@ -198,5 +275,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: '500',
+  },
+  // Disabled styles
+  optionButtonDisabled: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#e0e0e0',
+    opacity: 0.6,
+  },
+  optionIconDisabled: {
+    backgroundColor: '#f0f0f0',
+  },
+  optionTitleDisabled: {
+    color: '#999',
+  },
+  optionDescriptionDisabled: {
+    color: '#bbb',
   },
 });

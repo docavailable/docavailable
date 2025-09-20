@@ -68,6 +68,7 @@ export default function InstantSessionsScreen() {
   const [showDirectBookingModal, setShowDirectBookingModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [selectedSessionType, setSelectedSessionType] = useState<'text' | 'audio' | 'video'>('text');
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
 
   const fetchAvailableDoctors = async () => {
     try {
@@ -164,9 +165,29 @@ export default function InstantSessionsScreen() {
     }
   };
 
+  const loadSubscription = async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/subscription`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setCurrentSubscription(data.data);
+      } else {
+        setCurrentSubscription(null);
+      }
+    } catch (error) {
+      console.error('Error loading subscription:', error);
+      setCurrentSubscription(null);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchAvailableDoctors(), checkActiveSession()]);
+    await Promise.all([fetchAvailableDoctors(), checkActiveSession(), loadSubscription()]);
     setLoading(false);
   };
 
@@ -302,6 +323,7 @@ export default function InstantSessionsScreen() {
         onClose={() => setShowBookingOptionsModal(false)}
         onSelectOption={handleBookingOptionSelect}
         doctorName={selectedDoctor ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}` : ''}
+        subscription={currentSubscription}
       />
 
       <DirectBookingModal
